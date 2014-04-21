@@ -83,6 +83,7 @@ public class WW_OnlineLottery extends HttpServlet {
       
     try {
       	printList( con,out,waitlist_id); 
+	printEmail( con, out,waitlist_id);
     } catch (Exception e) {
         out.println("<p>Error:"+e);
     }
@@ -105,15 +106,17 @@ public class WW_OnlineLottery extends HttpServlet {
   {
     try {
 	Statement query2 = con.createStatement();
-        ResultSet result2 = query2.executeQuery
-         ("select * from Course where crn = '"+waitlist_id+"'");
-	out.println("<p>Course Number:"+result2.getString("course_num")+" Department:"+result2.getString("department")+" Kind:"+result2.getString("kind")+" Enrollment Limit:"+result2.getString("course_limit")+"<br>");
+        ResultSet result2 = query2.executeQuery("select * from Course where crn = "+waitlist_id);
 	
+	if (result2.next()) {
+		out.println("<p>"+result2.getString("course_num")+" "+result2.getString("course_name")+"<br>"+result2.getString("kind")+" Limit: "+result2.getString("course_limit")+"<br>");
+	}
+
 	Statement query = con.createStatement();
 	ResultSet result = query.executeQuery
          ("select * from Waitlist where waitlist_id = '"+waitlist_id+"' order by submitted_on asc");  
  	out.println("<ol>");
-		if (result.next()) {
+		while (result.next()) {
 			String student_bid = result.getString("student_bid");
 			String student_name = result.getString("student_name");
 			String major_minor  = result.getString("major_minor");
@@ -122,14 +125,33 @@ public class WW_OnlineLottery extends HttpServlet {
 			String rank = result.getString("rank");
 			String explanation = result.getString("explanation");
 		if(!result.wasNull()) {
-                	out.println("<li>"+rank+" "+student_bid+" "+student_name+" "+major_minor+" "+student_class+" "+submitted_on+" "+explanation+"</li>");
+                	out.println("<li onclick=console.log('"+student_bid+"'); value='"+student_bid+"'>"+rank+" "+student_name+" "+major_minor+" "+student_class+" "+explanation+"</li>");
 		} else {
                     out.println("result was not null"); //when there's no result,print error statement
                 }
-	out.println("</ol>");
  	}
+	out.println("</ol>");
 	}
 
+    catch (SQLException e) {
+      out.println("<p>Error: "+e);
+    }
+  }
+
+ private void printEmail(Connection con, PrintWriter out, String waitlist_id)
+    throws SQLException
+  {
+    try {
+        Statement query = con.createStatement();
+        ResultSet result = query.executeQuery("select email from Person,Waitlist where Person.bid=Waitlist.student_bid and Waitlist.waitlist_id ="+waitlist_id);
+	
+	out.println("Emails of students on waitlist:<br><ul>");
+        while (result.next()) {
+                out.println("<li>"+result.getString("email")+"</li>");
+        	}	
+	out.println("</ul>");
+	}
+ 
     catch (SQLException e) {
       out.println("<p>Error: "+e);
     }
