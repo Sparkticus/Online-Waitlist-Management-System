@@ -27,7 +27,7 @@ public class WW_CreateAccount extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
+      con = ltang_DSN.connect("ltang_db");
       processForm(req, out, con, selfUrl); //this does the work
     }
     catch (SQLException e) {
@@ -122,8 +122,9 @@ public class WW_CreateAccount extends HttpServlet {
       if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>Congratulations! You've successfully created your account.");
-	out.println("<p>To add yourself to a waitlist, click here."); //FIX LINK LATER
-      } else {
+	out.println("<p>To add yourself to a waitlist,<a href='/ltang/servlet/WW_AddToWaitlist'> click here. </a>"); //FIX LINK LATER
+	out.println("<p>To view students on a waitlist,<a href='/ltang/servlet/WW_ViewWaitlist'> click here. </a>");      
+} else {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>It looks like you already have an account!"); // I NEED TO ADD A CASE FOR THIS ie: SQL QUERY IN UPDATE STUDENT TO CHECK IF DUPLICATE BEFORE INSERTING
       }
