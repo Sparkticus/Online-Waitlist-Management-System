@@ -102,8 +102,7 @@ public class WW_CreateWaitlist extends HttpServlet {
   // ========================================================================
 
   private boolean updateDatabase(Connection con, PrintWriter out, String bid,
-         String crn, String course_name,String course_num,
-         String department, String course_limit, String type)
+         String crn, String course_num, String course_name, String department, String course_limit, String type)
     throws SQLException
   {
     int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
@@ -139,19 +138,7 @@ public class WW_CreateWaitlist extends HttpServlet {
       query2.setString(1, escape(bid));
       query2.setString(2, escape(crn));
       int result2 = query2.executeUpdate();
-      /**
-      if (type.equals("class")) {
-        PreparedStatement query3 = con.prepareStatement ("Insert INTO Class(crn) values (?)");
-        query3.setString(1, escape(crn));
-        int result3 = query3.executeUpdate();
-      
-      } else {
-        PreparedStatement query4 = con.prepareStatement ("Insert Into Lab (crn) values (?)");
-  query4.setString(1, escape(crn));
-  int result4 = query4.executeUpdate();
-      }
-      */
-      return result1;
+        return result1;
     }
     catch (SQLException e) {
       out.println("<p>Error: "+e);
