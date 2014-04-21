@@ -12,6 +12,7 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 
 // ==========================================================================
 // =========================== WALTER WAITLIST ==============================
+// ========================= CREATE WAITLIST PAGE============================
 // ==========================================================================
 
 public class WW_CreateWaitlist extends HttpServlet {
@@ -26,11 +27,11 @@ public class WW_CreateWaitlist extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      con = JoannaDSN.connect("jbi_db");
        String submit = escape(req.getParameter("submit"));
-	if (submit!=null) {
-	processForm(req, out, con);
-	}
+  if (submit!=null) {
+  processForm(req, out, con);
+  }
       printForm(out,selfUrl);
     }
     catch (SQLException e) {
@@ -51,10 +52,10 @@ public class WW_CreateWaitlist extends HttpServlet {
   private void close(Connection con) {
     if( con != null ) {
       try {
-	con.close();
+  con.close();
       }
       catch( Exception e ) {
-	e.printStackTrace();
+  e.printStackTrace();
       }
     }
   }
@@ -74,55 +75,53 @@ public class WW_CreateWaitlist extends HttpServlet {
   private void processForm(HttpServletRequest req, PrintWriter out, Connection con)
     throws SQLException
   {
-    // IDEA: Have a big control method where you first determine which submit button
-    // was pressed. Depending on that, you enter if/else statements to find out what
-    // data to grab and then call the appropriate upate method
-    // Perhaps we could create a helper method 'update person' to call within our
-    // update student and update professor? Just some thoughts.
- 
+    // Get the request data
     String bid = req.getParameter("bid");
     String crn = req.getParameter("crn");
     String course_num = req.getParameter("course_num");
-	String course_name = req.getParameter("course_name");
+    String course_name = req.getParameter("course_name");
     String department = req.getParameter("department");
     String course_limit = req.getParameter("course_limit");
     String type = req.getParameter("type");
+    
     try {
       if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type))
         {
-            out.println("<p>Congratulations! You've successfully created a waitlist.");
-      } else {
-          out.println("<p>It looks like that waitlist already exists!");
+    out.println("<p>Congratulations! You've successfully created a waitlist.");
+  } else {
+  out.println("<p>It looks like that waitlist already exists!");
       }
     } catch (Exception e) {
-        out.println("<p>Error:"+e);
+      out.println("<p>Error:"+e);
     }
-
+    
   }
-
+  
   // ========================================================================
-  // UPDATE THE DATABASES
+  // UPDATE THE DATABASE
   // ========================================================================
 
-  // STRATEGY: control panel to choose which helper update table to execute
-  // For now just this to make sure it works:
-  private boolean updateDatabase(Connection con, PrintWriter out, String bid, String crn, String course_num,String course_name, String department, String course_limit, String type)
+  private boolean updateDatabase(Connection con, PrintWriter out, String bid,
+         String crn, String course_name,String course_num,
+         String department, String course_limit, String type)
     throws SQLException
   {
-  int result = insert(con,out,bid,crn,course_num,course_name, department, course_limit, type);
+    int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
     if (result == 1) {
       return true;
     } else {
       return false;
     }
   }
-
+  
   // ========================================================================
-  // HELPER METHODS: CONTROL PANEL
+  // HELPER METHOD: ACTUAL INSERTING
   // ========================================================================
 
-  // Insert new student into the database
-  private int insert(Connection con, PrintWriter out, String bid, String crn, String course_num, String course_name, String department, String course_limit, String type)
+  // Insert new waitlist into the database
+  private int insert(Connection con, PrintWriter out, String bid, String crn,
+         String course_num, String course_name, String department,
+         String course_limit, String type)
     throws SQLException
   {
     try {
@@ -133,46 +132,44 @@ public class WW_CreateWaitlist extends HttpServlet {
       query1.setString(3, escape(department));
       query1.setString(4, escape(course_limit));
       query1.setString(5, escape(type));
-	query1.setString(6, escape(course_name));
+      query1.setString(6, escape(course_name));
       int result1 = query1.executeUpdate();
-        
-        PreparedStatement query2 = con.prepareStatement ("Insert INTO Created_Waitlist(bid,crn) values (?,?)");
-        query2.setString(1, escape(bid));
-        query2.setString(2, escape(crn));
-        int result2 = query2.executeUpdate();
-        /*
-        if (type.equals("class")) {
-            PreparedStatement query3 = con.prepareStatement ("Insert INTO Class(crn) values (?)");
-            query3.setString(1, escape(crn));
-            int result3 = query3.executeUpdate();
-            
-        } else
-       {     PreparedStatement query4 = con.prepareStatement ("Insert Into Lab (crn) values (?)");
-            query4.setString(1, escape(crn));
-            int result4 = query4.executeUpdate();
-        }
-*/
-      return result1;
+      
+      PreparedStatement query2 = con.prepareStatement ("Insert INTO Created_Waitlist(bid,crn) values (?,?)");
+      query2.setString(1, escape(bid));
+      query2.setString(2, escape(crn));
+      int result2 = query2.executeUpdate();
+      /**
+      if (type.equals("class")) {
+        PreparedStatement query3 = con.prepareStatement ("Insert INTO Class(crn) values (?)");
+        query3.setString(1, escape(crn));
+        int result3 = query3.executeUpdate();
+      
+      } else {
+        PreparedStatement query4 = con.prepareStatement ("Insert Into Lab (crn) values (?)");
+  query4.setString(1, escape(crn));
+  int result4 = query4.executeUpdate();
       }
+      */
+      return result1;
+    }
     catch (SQLException e) {
       out.println("<p>Error: "+e);
       return -1; //error
     }
   }
-
-
+  
   // ========================================================================
-  // PRINT THE VARIOUS FORMS
+  // PRINT THE FORM
   // ========================================================================
 
-  // Print the Student form
+  // Print the Waitlist form
   private void printForm(PrintWriter out,String selfUrl)
     throws SQLException
   {
-out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td><p>Professor Banner ID: <input required type='text' name='bid'></tr></td> <tr><td><p>Course CRN: <input required type='text' name='crn'></tr></td> <tr><td><p>Course Number: <input required type='text' name='course_num'></tr></td> <tr><td><p>Course Name:<input required type='text' name='course_name'></td></tr><tr><td><p>Department: <input required type='text' name='department'></tr></td> <tr><td><p>Enrollment Limit: <input required type='text' name='course_limit'></tr></td> <tr><td><p>Type: <select required name='type'> <option value=''>Choose one</option> <option value='Lecture'>Lectue <option value='Lab'>Lab </select></td></tr> <tr><td><p><input type='submit' name='submit' value='Create Waitlist'></td></tr> </table> </form> </body></html");
- }
-
-
+    out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td><p>Professor Banner ID: <input required type='text' name='bid'></tr></td> <tr><td><p>Course CRN: <input required type='text' name='crn'></tr></td> <tr><td><p>Course Number: <input required type='text' name='course_num'></tr></td> <tr><td><p>Course Name:<input required type='text' name='course_name'></td></tr><tr><td><p>Department: <input required type='text' name='department'></tr></td> <tr><td><p>Enrollment Limit: <input required type='text' name='course_limit'></tr></td> <tr><td><p>Type: <select required name='type'> <option value=''>Choose one</option> <option value='Lecture'>Lectue <option value='Lab'>Lab </select></td></tr> <tr><td><p><input type='submit' name='submit' value='Create Waitlist'></td></tr> </table> </form> </body></html");
+  }
+  
   // ========================================================================
   // HELPER METHOD: ESCAPING
   // ========================================================================
@@ -189,7 +186,7 @@ out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form me
   public void doGet(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException
   {
-    try{
+    try {
       doRequest(req,res);
     }
     catch (SQLException e) {
@@ -199,7 +196,7 @@ out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form me
   public void doPost(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException
     {
-    try{
+    try {
       doRequest(req,res);
     }
     catch (SQLException e) {
