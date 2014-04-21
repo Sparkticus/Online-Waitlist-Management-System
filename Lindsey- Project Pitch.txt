@@ -1,0 +1,8 @@
+Lindsey Tang
+
+I would be interested in developing a database-driven web application that helps professors manage their class wait lists. I envision a user authentication system, with professors and students having their own logins. The application would connect to the registrar's course database - hopefully it would provide us with real-time information about course enrollments - and extract class information from that source. Students select the class they'd like to be wait listed for. Professors receive the wait list requests and decides whether to approve or reject the request given some information about the student, such as their class year and major. We could debate whether we'd allow professors to see wait lists the students are also on. Of course, the requests are ordered chronologically, so that students who send requests sooner have priority. Any reminders or notifications about wait list status would be sent via email, perhaps even on the application's internal messaging system. This application would keep record of the important registration dates. 
+
+In terms of ER elements, I'd say professors and students are entities under the larger entity 'Person' with attributes as profile details and contact information. There would also be entities 'Waitlist' and 'Course'.
+ 
+I am excited to implement this project idea, and I look forward to working with my group!
+
