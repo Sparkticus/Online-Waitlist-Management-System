@@ -87,7 +87,6 @@ public class WW_CreateWaitlist extends HttpServlet {
     String department = req.getParameter("department");
     String course_limit = req.getParameter("course_limit");
     String type = req.getParameter("type");
-      
     try {
       if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type))
         {
@@ -107,10 +106,10 @@ public class WW_CreateWaitlist extends HttpServlet {
 
   // STRATEGY: control panel to choose which helper update table to execute
   // For now just this to make sure it works:
-  private boolean updateDatabase(Connection con, PrintWriter out, String bid, String crn, String course_name,String course_num, String department, String course_limit, String type)
+  private boolean updateDatabase(Connection con, PrintWriter out, String bid, String crn, String course_num,String course_name, String department, String course_limit, String type)
     throws SQLException
   {
-    int result = insert(con,out,bid,crn,course_num,course_name, department, course_limit, type);
+  int result = insert(con,out,bid,crn,course_num,course_name, department, course_limit, type);
     if (result == 1) {
       return true;
     } else {
