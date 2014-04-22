@@ -49,10 +49,10 @@ public class WW_WaitlistSearch extends HttpServlet {
   private void close(Connection con) {
     if( con != null ) {
       try {
-	con.close();
+  con.close();
       }
       catch( Exception e ) {
-	e.printStackTrace();
+  e.printStackTrace();
       }
     }
   }
@@ -96,14 +96,12 @@ public class WW_WaitlistSearch extends HttpServlet {
     // Process the form data submitted for the search
     String field = req.getParameter("field");
     String input = req.getParameter("search_term");
-    out.println(field);
-    out.println(input);
     
     try {
       if(foundResults(req,con,out,field,input)) {
-	out.println("There are no more matches.");
+  // Do nothing; foundResults takes care of everything
       } else {
-	out.println("Oops! It looks like we didn't find any results.");
+  out.println("Oops! It looks like we didn't find any results.");
       } 
     } catch (Exception e) {
       out.println("Error: "+e);
@@ -116,45 +114,34 @@ public class WW_WaitlistSearch extends HttpServlet {
 
   // DETERMINE IF RESULTS IN SEARCH
   private boolean foundResults(HttpServletRequest req, Connection con, PrintWriter out,
-			       String field, String input)
+             String field, String input)
     throws SQLException
   {
     try {
       PreparedStatement query = con.prepareStatement
-	("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
-	 "FROM Course, Created_Waitlist, Person "+
-	 "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
-	 "AND " + escape(field) + " LIKE ?");
-      //query.setObject(1, escape(field));
+  ("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
+   "FROM Course, Created_Waitlist, Person "+
+   "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
+   "AND " + escape(field) + " LIKE ?"); //IS THIS OKAY. SQL INJECTION??? PROBABLY T__T [ASK]
       query.setString(1, "%"+escape(input)+"%"); //add wildcard
-      ResultSet rs = query.executeQuery();
-      out.println(query.toString());
-      //return true;
+      ResultSet result = query.executeQuery();
       
-      out.println("Here are your search results:<ul>");
-      while(rs.next()) {
-	out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-		    " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
-      }
-      out.println("</ul>");
-      return true;
-      //out.println("
-      //while (result.next()){
-      //out.println("1");
-      //}
       // Print the results and return boolean
-      // return printSearchResults(req, out, con, result);
-      /*if(!result.wasNull()) {
-	printSearchResults(req, out, con, result);	
-	return true; //yes results found
-	      } else {
-	return false; // no results found
+      if(!result.wasNull()) {
+  /**SOMETHING IS WRONG
+     always returns true if use wasNull()
+     but can't use next() because then can't get first result in resultset
+     BUT next() correctly returns the boolean values
+  */
+  printSearchResults(req, out, con, result); //works ish; need to fix; subtle bug 
+        return true; //yes results found
+      } else {
+  return false; //no results found
       }
-	*/
     } catch (Exception e) { // something went wrong
       out.println("Error: "+e);
       return false;
-    }	
+    } 
   }
 
   // ========================================================================
@@ -181,19 +168,15 @@ public class WW_WaitlistSearch extends HttpServlet {
   }
 
   // Print the search results
-  private boolean printSearchResults(HttpServletRequest req, PrintWriter out, Connection con, ResultSet rs)
+  private void printSearchResults(HttpServletRequest req, PrintWriter out, Connection con, ResultSet rs)
     throws SQLException
   {
-    int count = 0;
     out.println("Here are your search results:<ul>");
     while(rs.next()) {
       out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-		  " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
-      count++;
+      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
     }
     out.println("</ul>");
-    if (count > 0) { return true; }
-    else { return false; }
   }
 
   // Print all Waitlists in the database
@@ -208,7 +191,7 @@ public class WW_WaitlistSearch extends HttpServlet {
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
     while(rs.next()) {
       out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-		  " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
+      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
     }
     out.println("</ul>");
   }
