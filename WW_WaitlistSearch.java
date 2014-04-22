@@ -98,10 +98,10 @@ public class WW_WaitlistSearch extends HttpServlet {
     String input = req.getParameter("search_term");
     
     try {
-      if(foundResults(req,con,out,field,input)) {
+      if(foundResults(req,con,out,selfUrl,field,input)) {
   // Do nothing; foundResults takes care of everything
       } else {
-  out.println("Oops! It looks like we didn't find any results.");
+  out.println("Sorry! It looks like we didn't find any results.");
       } 
     } catch (Exception e) {
       out.println("Error: "+e);
@@ -113,27 +113,26 @@ public class WW_WaitlistSearch extends HttpServlet {
   // ========================================================================
 
   // DETERMINE IF RESULTS IN SEARCH
-  private boolean foundResults(HttpServletRequest req, Connection con, PrintWriter out,
+  private boolean foundResults(HttpServletRequest req, Connection con, PrintWriter out, String selfUrl,
              String field, String input)
     throws SQLException
   {
     try {
       PreparedStatement query = con.prepareStatement
-  ("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
-   "FROM Course, Created_Waitlist, Person "+
+  ("SELECT count(*) FROM Course, Created_Waitlist, Person "+
    "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
-   "AND " + escape(field) + " LIKE ?"); //IS THIS OKAY. SQL INJECTION??? PROBABLY T__T [ASK]
+   "AND " + escape(field) + " LIKE ?"); //drop down menu... will this be okay?
       query.setString(1, "%"+escape(input)+"%"); //add wildcard
       ResultSet result = query.executeQuery();
-      
+
+      // Find out how many results
+      int count = 0; //initialize count
+      if(result.next()) {
+  count = result.getInt(1);
+      }
       // Print the results and return boolean
-      if(!result.wasNull()) {
-  /**SOMETHING IS WRONG
-     always returns true if use wasNull()
-     but can't use next() because then can't get first result in resultset
-     BUT next() correctly returns the boolean values
-  */
-  printSearchResults(req, out, con, result); //works ish; need to fix; subtle bug 
+      if (count != 0) {
+  printSearchResults(req, out, con, selfUrl, count, field, input);
         return true; //yes results found
       } else {
   return false; //no results found
@@ -168,10 +167,19 @@ public class WW_WaitlistSearch extends HttpServlet {
   }
 
   // Print the search results
-  private void printSearchResults(HttpServletRequest req, PrintWriter out, Connection con, ResultSet rs)
+  private void printSearchResults(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl,
+          int count, String field, String input)
     throws SQLException
   {
-    out.println("Here are your search results:<ul>");
+    out.println("We found "+count+ " results in your search:<ul>");
+    PreparedStatement query = con.prepareStatement
+      ("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
+       "FROM Course, Created_Waitlist, Person "+
+       "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
+       "AND " + escape(field) + " LIKE ?"); //IS THIS OKAY. SQL INJECTION??? It's a dropdown... [ASK]
+    query.setString(1, "%"+escape(input)+"%"); //add wildcard
+    ResultSet rs = query.executeQuery();
+    // Print the results
     while(rs.next()) {
       out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
       " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
@@ -184,11 +192,12 @@ public class WW_WaitlistSearch extends HttpServlet {
     throws SQLException
   {
     out.println("List of courses with waitlists:<ul>");
-    Statement waitlists = con.createStatement();
-    ResultSet rs = waitlists.executeQuery
+    Statement query = con.createStatement();
+    ResultSet rs = query.executeQuery
       ("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
        "FROM Course, Created_Waitlist, Person "+
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
+    // Print the results
     while(rs.next()) {
       out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
       " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
