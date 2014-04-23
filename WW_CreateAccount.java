@@ -124,7 +124,7 @@ public class WW_CreateAccount extends HttpServlet {
       if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>Congratulations! You've successfully created your account.");
-	out.println("<p>To search for a waitlist,<a href='/ltang/servlet/WW_SearchWaitlist'> click here</a>."); //FIX LINK LATER
+	out.println("<p>To search for a waitlist,<a href='/ltang/servlet/WW_WaitlistSearch'> click here</a>."); //FIX LINK LATER
     out.println("<p>To add yourself to a waitlist,<a href='/ltang/servlet/WW_AddToWaitlist'>click here</a>.");
 	} else {
 	printCreateAccount(req, out, con, selfUrl);
