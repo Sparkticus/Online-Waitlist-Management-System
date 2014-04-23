@@ -27,7 +27,7 @@ public class WW_WaitlistSearch extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
+      con = ltang_DSN.connect("ltang_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
     }
@@ -181,7 +181,7 @@ public class WW_WaitlistSearch extends HttpServlet {
     ResultSet rs = query.executeQuery();
     // Print the results
     while(rs.next()) {
-      out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
+      out.println("<li onclick='alert('Save this CRN "+rs.getString(1)+"');'><a href='/ltang/servlet/WW_AddToWaitlist'>"+rs.getString(1)+" "+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
       " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
     }
     out.println("</ul>");
@@ -199,8 +199,8 @@ public class WW_WaitlistSearch extends HttpServlet {
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
     // Print the results
     while(rs.next()) {
-      out.println("<li>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
+      out.println("<li onclick='alert('Save this CRN "+rs.getString(1)+"');'><a href='/ltang/servlet/WW_AddToWaitlist'>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
+      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</a></li>");
     }
     out.println("</ul>");
   }

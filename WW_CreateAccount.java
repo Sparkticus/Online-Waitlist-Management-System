@@ -97,6 +97,8 @@ public class WW_CreateAccount extends HttpServlet {
     } else {
       // No button was pressed
       printCreateAccount(req, out, con, selfUrl);
+        out.println("<p>To search for a waitlist,<a href='/ltang/servlet/WW_WaitlistSearch'> click here. </a>");
+        out.println("<p>Professors: To view your waitlist,<a href='/ltang/servlet/WW_ViewWaitlist'> click here. </a>");
     }
 
   }
@@ -122,9 +124,9 @@ public class WW_CreateAccount extends HttpServlet {
       if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>Congratulations! You've successfully created your account.");
-	out.println("<p>To add yourself to a waitlist,<a href='/ltang/servlet/WW_AddToWaitlist'> click here. </a>"); //FIX LINK LATER
-	out.println("<p>To view students on a waitlist,<a href='/ltang/servlet/WW_ViewWaitlist'> click here. </a>");      
-} else {
+	out.println("<p>To search for a waitlist,<a href='/ltang/servlet/WW_SearchWaitlist'> click here</a>."); //FIX LINK LATER
+    out.println("<p>To add yourself to a waitlist,<a href='/ltang/servlet/WW_AddToWaitlist'>click here</a>.");
+	} else {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>It looks like you already have an account!"); // I NEED TO ADD A CASE FOR THIS ie: SQL QUERY IN UPDATE STUDENT TO CHECK IF DUPLICATE BEFORE INSERTING
       }
@@ -150,7 +152,9 @@ public class WW_CreateAccount extends HttpServlet {
       if(updateProfessor(con,out,bid,name,email,usrname,pass,department)) {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>Congratulations! You've successfully created your account.");
-	out.println("<p>To create a waitlist for your course, click here.");
+	out.println("<p>To create a waitlist for your course, <a href='/ltang/servlet/WW_CreateWaitlist'>click here</a>.");
+    out.println("<p>To view students on your waitlists,<a href='/ltang/servlet/WW_ViewWaitlist'> click here</a>.");
+
       } else {
 	printCreateAccount(req, out, con, selfUrl);
 	out.println("<p>It looks like you already have an account!");
