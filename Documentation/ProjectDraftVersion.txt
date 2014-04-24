@@ -1,0 +1,82 @@
+﻿Walter
+The Online Waitlist Management System (Part III)
+Proposed by: Joanna Bi & Lindsey Tang
+
+
+SUMMARY:
+
+
+We are submitting a rapid prototype version of our final project “Walter: The Online Waitlist Management System”. At this point, we’ve ensured basic functionality of our web application. This includes having a completed backend structure that uses the MySQL database and integrating it with minor html code. We have coded the major components of our application, supporting operations such as creating professor and student accounts, creating waitlists, searching for existing waitlists, adding oneself to a waitlist, and viewing students on a specific waitlist. We’re glad to have achieved the large majority of our milestone goals. We plan to further develop the application by integrating session management tools, creating personalized homepages, widgets that would allow professors to rearrange the order of their waitlists and invoke online lottery, as well as building front-end features using the CSS Bootstrap framework. We’re excited for the next stages of our application development, and we look forward to receiving useful feedback. 
+
+
+Included in this documentation are:
+1. Our URLs
+2. Directions and sample input for testing purposes
+3. Our code thus far
+
+
+I. URLs
+* http://cs.wellesley.edu:8080/ltang/servlet/WW_CreateAccount
+* http://cs.wellesley.edu:8080/ltang/servlet/WW_WaitlistSearch
+* http://cs.wellesley.edu:8080/ltang/servlet/WW_AddToWaitlist
+* http://cs.wellesley.edu:8080/ltang/servlet/WW_CreateWaitlist
+* http://cs.wellesley.edu:8080/ltang/servlet/WW_ViewWaitlist
+
+
+II. Testing Directions
+
+
+Create a user account
+1. Begin your user experience at our welcome page: http://cs.wellesley.edu:8080/ltang/servlet/WW_CreateAccount
+2. Users can create either a student account or a professor account. For testing purposes, let’s create a professor account. 
+   1. Create a new professor with the following inputs respectively:
+                B8765492
+Takis Metaxas
+pmetaxas@wellesley.edu 
+takis 
+TakisPass
+Computer Science
+
+
+Create a waitlist (for Professors only) 
+1. Go to link http://cs.wellesley.edu:8080/ltang/servlet/WW_CreateWaitlist
+2. Enter the following information for testing purposes, then click done. 
+                B8765492
+                23678
+                CS230-03
+                Data structures
+                Computer Science
+                25
+                Lecture
+
+
+To search for an existing waitlist:
+1. Go to link http://cs.wellesley.edu:8080/ltang/servlet/WW_WaitlistSearch 
+2. Search by any available fields in drop down menu
+3. Click on a waitlist to go to another page, that would allow users to add themselves to the selected waitlist.
+
+
+Adding yourself to a waitlist (for Students only):
+1. Go directly to link http://cs.wellesley.edu:8080/ltang/servlet/WW_AddToWaitlist
+2. Fill out the form using the following information:
+CRN: 23678 (or 12345 if the previous crn didn’t work)
+B8765430 
+Mew Two
+pokemon@gmail.com  
+Political Science 
+2017
+*add any comments you’d like* 
+
+
+View students on waitlist (for Professors only): 
+1. Go directly to http://cs.wellesley.edu:8080/ltang/servlet/WW_ViewWaitlist 
+2. Enter Waitlist ID: 23678 (or 12345 if the previous id didn’t work) 
+3. Professors can rearrange the order of the list (visually only)
+
+
+
+
+III. CODE:
+
+
+*excluded from this document*
