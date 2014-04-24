@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 
 // ==========================================================================
 // =========================== WALTER WAITLIST ==============================
-// ========================= ONLINE LOTTERY PAGE ============================
+// ========================= VIEW WAITLIST PAGE ============================
 // ==========================================================================
 
 public class WW_ViewWaitlist extends HttpServlet {
@@ -27,14 +27,14 @@ public class WW_ViewWaitlist extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      con = JoannaDSN.connect("jbi_db");
       String submit = escape(req.getParameter("submit"));
       if (submit!=null) {
-  	printForm(out,selfUrl);
-  	processForm(req, out, con);
+    printForm(out,selfUrl);
+    processForm(req, out, con);
       }
       else {
-  	printForm(out,selfUrl);
+    printForm(out,selfUrl);
       }
     } 
     catch (SQLException e) {
@@ -68,8 +68,8 @@ public class WW_ViewWaitlist extends HttpServlet {
     out.println("<head>");
     out.println("<title>Walter Waitlist</title>");
     out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'><script src='//code.jquery.com/jquery-1.10.2.js'></script><script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-	out.println("</head>");
-	out.println("<body>");
+    out.println("</head>");
+    out.println("<body>");
   }
   
   // ========================================================================
@@ -127,7 +127,7 @@ public class WW_ViewWaitlist extends HttpServlet {
   }
       }
       out.println("</ul>");
-	out.println("<script>$('#students').sortable();</script>");
+      out.println("<script>$('#students').sortable();</script>");
     } catch (SQLException e) {
       out.println("<p>Error: "+e);
     }
@@ -143,7 +143,7 @@ public class WW_ViewWaitlist extends HttpServlet {
   ("select email from Person,Waitlist where Person.bid=Waitlist.student_bid and Waitlist.waitlist_id ="+waitlist_id);
       out.println("Student Emails:<br>");
       while (result.next()) {
-  	out.println(result.getString("email")+";");
+    out.println(result.getString("email")+";");
       } 
       out.println("<br>");
     }

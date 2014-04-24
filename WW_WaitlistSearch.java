@@ -27,7 +27,7 @@ public class WW_WaitlistSearch extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      con = jbi_DSN.connect("jbi_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
     }
@@ -230,7 +230,7 @@ public class WW_WaitlistSearch extends HttpServlet {
   
   public void doPost(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException
-    {
+  {
     try{
       doRequest(req,res);
     }

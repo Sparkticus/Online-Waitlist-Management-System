@@ -28,10 +28,10 @@ public class WW_CreateWaitlist extends HttpServlet {
     try {
       printPageHeader(out);
       con = JoannaDSN.connect("jbi_db");
-       String submit = escape(req.getParameter("submit"));
-  if (submit!=null) {
+      String submit = escape(req.getParameter("submit"));
+      if (submit!=null) {
   processForm(req, out, con);
-  }
+      }
       printForm(out,selfUrl);
     }
     catch (SQLException e) {
@@ -102,7 +102,8 @@ public class WW_CreateWaitlist extends HttpServlet {
   // ========================================================================
 
   private boolean updateDatabase(Connection con, PrintWriter out, String bid,
-         String crn, String course_num, String course_name, String department, String course_limit, String type)
+         String crn, String course_num, String course_name,
+         String department, String course_limit, String type)
     throws SQLException
   {
     int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
@@ -138,7 +139,7 @@ public class WW_CreateWaitlist extends HttpServlet {
       query2.setString(1, escape(bid));
       query2.setString(2, escape(crn));
       int result2 = query2.executeUpdate();
-        return result1;
+      return result1;
     }
     catch (SQLException e) {
       out.println("<p>Error: "+e);
@@ -182,7 +183,7 @@ public class WW_CreateWaitlist extends HttpServlet {
   
   public void doPost(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException
-    {
+  {
     try {
       doRequest(req,res);
     }
