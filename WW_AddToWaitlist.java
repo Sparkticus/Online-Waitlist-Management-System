@@ -23,16 +23,42 @@ public class WW_AddToWaitlist extends HttpServlet {
     res.setContentType("text/html; charset=UTF-8");
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
-
-    Connection con = null;
+	HttpSession session = req.getSession(true);
+    String sessId = session.getId();
+    printPageHeader(out);
+    
+    //control access to add
+	String session_bid = (String)session.getAttribute("session_bid"); 
+	if (session_bid == null){
+		out.println("Please log in or create an account to add to waitlist.");
+		out.println("<a href='/ltang/servlet/WW_Home'>Click here to go to home page</a>");
+	} else {
+	Connection con = null;
     try {
-      printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
-      String submit = escape(req.getParameter("submit"));
+      con = ltang_DSN.connect("ltang_db");
+      String submit = escape(req.getParameter("crn_submit"));
+    
+      out.println("submit crn: "+submit);
+        
       if (submit!=null) {
-        processForm(req, out, con);
-      }
-      printForm(out,selfUrl);
+        processForm(session,req, out, con);
+      } else
+      { String previous_crn = (String)session.getAttribute("session_crn");
+        String current_crn = req.getParameter("crn");
+        if (!current_crn.equals(previous_crn)) {
+            session.setAttribute("session_crn",current_crn);
+        }
+        String crn = (String)session.getAttribute("session_crn");
+        
+        //printing out session values
+        Enumeration keys = session.getAttributeNames();
+        while (keys.hasMoreElements())
+        {
+            String key = (String)keys.nextElement();
+            out.println(key + ": " + session.getValue(key) + "<br>");
+        }
+        printForm(out,selfUrl,crn);
+        }
     }
     catch (SQLException e) {
       out.println("Error: "+e);
@@ -42,7 +68,8 @@ public class WW_AddToWaitlist extends HttpServlet {
     }
     finally {
       close(con);
-    }
+    } 
+	}
     out.println("</body>");
     out.println("</html>");
   }
@@ -60,27 +87,30 @@ public class WW_AddToWaitlist extends HttpServlet {
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("</head>");
-    out.println("<body>");
-  }
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
   
   // ========================================================================
   // PROCESS THE REQUEST DATA
   // ========================================================================
    
-  private void processForm(HttpServletRequest req, PrintWriter out, Connection con)
+  private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con)
     throws SQLException
   { 
     //Insert Into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) 
-    String waitlist_id = req.getParameter("waitlist_id");
-    String student_bid = req.getParameter("student_bid");
-    String student_name = req.getParameter("student_name");
-    String major_minor = req.getParameter("major_minor");
-    String student_class = req.getParameter("student_class");
+    String waitlist_id = (String)session.getAttribute("session_crn");
+    String student_bid = (String)session.getAttribute("session_bid");
+    String student_name =  (String)session.getAttribute("session_name");
+    String major_minor =  (String)session.getAttribute("session_major_minor");
+    String student_class =  (String)session.getAttribute("session_class");
+      
     String explanation = req.getParameter("explanation");
     
     try {
@@ -142,20 +172,28 @@ public class WW_AddToWaitlist extends HttpServlet {
       return result1;
     }
     catch (SQLException e) {
+        
+        if (e instanceof SQLIntegrityConstraintViolationException) {
+            out.println("check line 177- lindsey");
+        }
+        
       out.println("<p>Error: "+e);
       return -1; //error
     }
   }
-
-  // ========================================================================
+  
+// ========================================================================
   // PRINT THE FORM
   // ========================================================================
 
   // Print the Waitlist form
-  private void printForm(PrintWriter out,String selfUrl)
+  private void printForm(PrintWriter out,String selfUrl,String crn)
     throws SQLException
   {
-    out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td><p>Course CRN: <input required type='text' name='waitlist_id'></tr></td> <tr><td><p>Student Banner ID: <input required type='text' name='student_bid'></tr></td> <tr><td><p>Student Name: <input required type='text' name='student_name'></tr></td> <tr><td><p>Major or Minor: <input required type='text' name='major_minor'></tr></td> <tr><td><p>Year: <input required type='text' name='student_class'></tr></td> <tr><td><p> <textarea name='explanation' rows='3' cols='20'>Enter explanation here... </textarea> </tr></td> <tr><td><p><input type='submit' name='submit' value='Add to waitlist'></td></tr> </table> </form> </body></html");
+    out.println("<html><head> <title>Walter Waitlist</title> </head> <body>"+
+	" <form method='post' action='"+selfUrl+"'> <table cols='2'>"+
+"<tr><td><p> <textarea name='explanation' rows='3' cols='20'>Enter explanation here... </textarea> </tr></td> "+
+"<tr><td><p><button  type='submit' name='crn_submit' value="+crn+">Add to Waitlist</button></td></tr></table> </form> </body></html");
   }
   
   // ========================================================================

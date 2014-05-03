@@ -1,4 +1,4 @@
-/**Joanna Bi and Lindsey Tang
+/*;
    CS304: Final Project
    SPRING 2014 */
 
@@ -19,16 +19,23 @@ public class WW_CreateAccount extends HttpServlet {
 
   private void doRequest(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException, SQLException {
-
+	
+	
     res.setContentType("text/html; charset=UTF-8");
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
-
+        HttpSession session = req.getSession(true);
+//req.getSession().invalidate();
+	String sessId = session.getId();    
+	String session_bid = (String)session.getAttribute("session_bid");
+    
+    printPageHeader(out);
+        
+  if (session_bid == null) {
     Connection con = null;
     try {
-      printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
-      processForm(req, out, con, selfUrl); //this does the work
+      con = ltang_DSN.connect("ltang_db");
+      processForm(session,req, out, con, selfUrl); //this does the work
     }
     catch (SQLException e) {
       out.println("Error: "+e);
@@ -39,10 +46,14 @@ public class WW_CreateAccount extends HttpServlet {
     finally {
       close(con);
     }
+  } else {
+      out.println("Please logout before creating a new account");
+      out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+  }
     out.println("</body>");
     out.println("</html>");
   }
-
+        //
   /**Close the database connection. Should be called in a "finally"
      clause, so that it gets done no matter what.*/
   private void close(Connection con) {
@@ -56,19 +67,20 @@ public class WW_CreateAccount extends HttpServlet {
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("</head>");
-    out.println("<body>");
-  }
-  
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
+    
   // ========================================================================
   // CONTROL PANEL: WHICH BUTTON WAS PRESSED?
   // ========================================================================
 
-  private void processForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
+  private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
   {
     // Figure out which button was pressed
@@ -87,18 +99,16 @@ public class WW_CreateAccount extends HttpServlet {
       }
       // CREATE STUDENT ACCOUNT
       if (button.equals("Add Student")) {
-  processStudent(req, out, con, selfUrl);
+  processStudent(session,req, out, con, selfUrl);
       }
       // CREATE PROFESSOR ACCOUNT
       if (button.equals("Add Professor")) {
-  processProfessor(req, out, con, selfUrl);
+  processProfessor(session,req, out, con, selfUrl);
       }
 
     } else {
-      // No button was pressed
+      // No button was presseHttpSession session,d
       printCreateAccount(req, out, con, selfUrl);
-      out.println("<p>To search for a waitlist, <a href='/jbi/servlet/WW_WaitlistSearch'>click here</a>.");
-      out.println("<p>Professors: To view your waitlist, <a href='/jbi/servlet/WW_ViewWaitlist'>click here</a>.");
     }
 
   }
@@ -108,7 +118,7 @@ public class WW_CreateAccount extends HttpServlet {
   // ========================================================================
 
   // Process the form data submitted by a Student
-  private void processStudent(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
+  private void processStudent(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
   {
     // Process the form data submitted by a student
@@ -119,13 +129,17 @@ public class WW_CreateAccount extends HttpServlet {
     String pass = req.getParameter("pass");
     String year = req.getParameter("year");
     String major_minor = req.getParameter("major_minor");
-    
+	session.setAttribute("type", "student");
+	session.setAttribute("session_bid", bid);
+	session.setAttribute("session_name", name);
+	session.setAttribute("session_class", year);
+	session.setAttribute("session_major_minor", major_minor);
     try {
       if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
   printCreateAccount(req, out, con, selfUrl);
-  out.println("<p>Congratulations! You've successfully created your account.");
-  out.println("<p>To search for a waitlist, <a href='/jbi/servlet/WW_WaitlistSearch'>click here</a>.");
-  out.println("<p>To add yourself to a waitlist, <a href='/jbi/servlet/WW_AddToWaitlist'>click here</a>.");
+  out.println("<p>Congratulations! You've successfully created an account.");
+
+    out.println("<p><form action=/ltang/servlet/WW_WaitlistSearch><button type=submit>Search for a waitlist</button></form>");
       } else {
   printCreateAccount(req, out, con, selfUrl);
   out.println("<p>It looks like you already have an account!"); // I NEED TO ADD A CASE FOR THIS ie: SQL QUERY IN UPDATE STUDENT TO CHECK IF DUPLICATE BEFORE INSERTING
@@ -137,7 +151,7 @@ public class WW_CreateAccount extends HttpServlet {
   }
 
   // Process the form data submitted by a Professor
-  private void processProfessor(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
+  private void processProfessor(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
   {
     // This is the professor data
@@ -147,13 +161,19 @@ public class WW_CreateAccount extends HttpServlet {
     String usrname = req.getParameter("usrname");
     String pass = req.getParameter("pass");
     String department = req.getParameter("department");
-    
+	session.setAttribute("session_bid", bid);
+	session.setAttribute("session_name", name);
+	session.setAttribute("session_email", email);
+	session.setAttribute("session_department", department);
+	session.setAttribute("type", "professor");
+
     try {
       if(updateProfessor(con,out,bid,name,email,usrname,pass,department)) {
-  printCreateAccount(req, out, con, selfUrl);
-  out.println("<p>Congratulations! You've successfully created your account.");
-  out.println("<p>To create a waitlist for your course, <a href='/jbi/servlet/WW_CreateWaitlist'>click here</a>.");
-  out.println("<p>To view students on your waitlists, <a href='/jbi/servlet/WW_ViewWaitlist'>click here</a>.");
+  	printCreateAccount(req, out, con, selfUrl);
+  	out.println("<p>Congratulations! You've successfully created your account.");
+
+    out.println("<p><form action=/ltang/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
+  out.println("<p><form action=/ltang/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
       } else {
   printCreateAccount(req, out, con, selfUrl);
   out.println("<p>It looks like you already have an account!");

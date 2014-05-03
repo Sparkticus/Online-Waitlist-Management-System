@@ -27,7 +27,7 @@ public class WW_ViewWaitlist extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
+      con = ltang_DSN.connect("ltang_db");
       String submit = escape(req.getParameter("submit"));
       if (submit!=null) {
     printForm(out,selfUrl);
@@ -62,16 +62,17 @@ public class WW_ViewWaitlist extends HttpServlet {
       }
     }
   }
-  
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'><script src='//code.jquery.com/jquery-1.10.2.js'></script><script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-    out.println("</head>");
-    out.println("<body>");
-  }
-  
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'><script src='//code.jquery.com/jquery-1.10.2.js'></script><script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
+    
   // ========================================================================
   // PROCESS THE REQUEST DATA
   // ========================================================================

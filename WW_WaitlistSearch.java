@@ -24,10 +24,16 @@ public class WW_WaitlistSearch extends HttpServlet {
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
 
+	HttpSession session = req.getSession(true);
+    String sessId = session.getId();
+        
+  //  String type = (String)session.getAttribute("type");
+ //   String session_bid = (String)session.getAttribute("session_bid");
+
     Connection con = null;
     try {
       printPageHeader(out);
-      con = jbi_DSN.connect("jbi_db");
+      con = ltang_DSN.connect("ltang_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
     }
@@ -57,13 +63,15 @@ public class WW_WaitlistSearch extends HttpServlet {
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("</head>");
-    out.println("<body>");
-  }
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
   
   // ========================================================================
   // CONTROL PANEL: PRINT ALL WAITLISTS OR PRINT SEARCH RESULTS
@@ -181,12 +189,10 @@ public class WW_WaitlistSearch extends HttpServlet {
     ResultSet rs = query.executeQuery();
     // Print the results
     while(rs.next()) {
-      out.println("<li onclick='alert('Save this CRN "+rs.getString(1)+"');'><a href='/ltang/servlet/WW_AddToWaitlist'>"+rs.getString(1)+" "+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</li>");
+ out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }
-
   // Print all Waitlists in the database
   private void  printWaitlists(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
@@ -199,8 +205,7 @@ public class WW_WaitlistSearch extends HttpServlet {
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
     // Print the results
     while(rs.next()) {
-      out.println("<li onclick='alert('Save this CRN "+rs.getString(1)+"');'><a href='/ltang/servlet/WW_AddToWaitlist'>"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+
-      " "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</a></li>");
+      out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }

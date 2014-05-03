@@ -19,18 +19,33 @@ public class WW_CreateWaitlist extends HttpServlet {
 
   private void doRequest(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException, SQLException {
-
+	
     res.setContentType("text/html; charset=UTF-8");
-    PrintWriter out = res.getWriter();
-    String selfUrl = res.encodeURL(req.getRequestURI());
+    
+	PrintWriter out = res.getWriter();
+	HttpSession session = req.getSession(true);
+        String sessId = session.getId();
+    
+	String user = (String)session.getAttribute("type");  
+	
+	if (user == "professor") {
 
+	String selfUrl = res.encodeURL(req.getRequestURI());
+        Enumeration keys = session.getAttributeNames();
+        while (keys.hasMoreElements())
+        {
+        String key = (String)keys.nextElement();
+        out.println(key + ": " + session.getValue(key) + "<br>");
+        }
+
+	
     Connection con = null;
     try {
       printPageHeader(out);
-      con = JoannaDSN.connect("jbi_db");
+      con = ltang_DSN.connect("ltang_db");
       String submit = escape(req.getParameter("submit"));
       if (submit!=null) {
-  processForm(req, out, con);
+  processForm(session,req, out, con);
       }
       printForm(out,selfUrl);
     }
@@ -43,6 +58,9 @@ public class WW_CreateWaitlist extends HttpServlet {
     finally {
       close(con);
     }
+} else {
+	out.println("You don't have permission to view this page");
+}
     out.println("</body>");
     out.println("</html>");
   }
@@ -60,23 +78,26 @@ public class WW_CreateWaitlist extends HttpServlet {
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("</head>");
-    out.println("<body>");
-  }
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
+    
   
   // ========================================================================
   // PROCESS THE REQUEST DATA
   // ========================================================================
 
-  private void processForm(HttpServletRequest req, PrintWriter out, Connection con)
+  private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con)
     throws SQLException
   {
     // Get the request data
-    String bid = req.getParameter("bid");
+    String bid = (String)session.getAttribute("session_bid");
     String crn = req.getParameter("crn");
     String course_num = req.getParameter("course_num");
     String course_name = req.getParameter("course_name");
@@ -155,7 +176,8 @@ public class WW_CreateWaitlist extends HttpServlet {
   private void printForm(PrintWriter out,String selfUrl)
     throws SQLException
   {
-    out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td><p>Professor Banner ID: <input required type='text' name='bid'></tr></td> <tr><td><p>Course CRN: <input required type='text' name='crn'></tr></td> <tr><td><p>Course Number: <input required type='text' name='course_num'></tr></td> <tr><td><p>Course Name:<input required type='text' name='course_name'></td></tr><tr><td><p>Department: <input required type='text' name='department'></tr></td> <tr><td><p>Enrollment Limit: <input required type='text' name='course_limit'></tr></td> <tr><td><p>Type: <select required name='type'> <option value=''>Choose one</option> <option value='Lecture'>Lectue <option value='Lab'>Lab </select></td></tr> <tr><td><p><input type='submit' name='submit' value='Create Waitlist'></td></tr> </table> </form> </body></html");
+    out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td>"+
+"<tr><td><p>Course CRN: <input required type='text' name='crn'></tr></td> <tr><td><p>Course Number: <input required type='text' name='course_num'></tr></td> <tr><td><p>Course Name:<input required type='text' name='course_name'></td></tr><tr><td><p>Department: <input required type='text' name='department'></tr></td> <tr><td><p>Enrollment Limit: <input required type='text' name='course_limit'></tr></td> <tr><td><p>Type: <select required name='type'> <option value=''>Choose one</option> <option value='Lecture'>Lectue <option value='Lab'>Lab </select></td></tr> <tr><td><p><input type='submit' name='submit' value='Create Waitlist'></td></tr> </table> </form> </body></html");
   }
   
   // ========================================================================
