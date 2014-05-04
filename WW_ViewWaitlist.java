@@ -8,7 +8,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import java.sql.*;
 import java.lang.*;
-import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
+//import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
+import org.apache.commons.lang.*;
 
 // ==========================================================================
 // =========================== WALTER WAITLIST ==============================
@@ -23,20 +24,52 @@ public class WW_ViewWaitlist extends HttpServlet {
     res.setContentType("text/html; charset=UTF-8");
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
-
-    Connection con = null;
+        HttpSession session = req.getSession(true);
+        String sessId = session.getId();
+        Connection con = null;
+ 
     try {
       printPageHeader(out);
       con = ltang_DSN.connect("ltang_db");
-      String submit = escape(req.getParameter("submit"));
-      if (submit!=null) {
-    printForm(out,selfUrl);
-    processForm(req, out, con);
+        
+        String remove_bid =req.getParameter("remove_bid");
+        out.println(remove_bid);
+        String order =req.getParameter("new_order");
+        String previous_crn = (String)session.getAttribute("session_crn");
+        String current_crn = req.getParameter("waitlist_id");
+        
+        if (remove_bid!=null){
+            processRemove(req, out, con,remove_bid,previous_crn);
+        }
+        
+        if (order!=null && previous_crn!=null){
+            String [] sort = StringUtils.split(order,',');
+            processSort(req, out, con,sort,previous_crn);
+        }
+       
+      if (current_crn!=previous_crn) {
+        if (current_crn!=null){
+                session.setAttribute("session_crn",current_crn);
+            } else {
+                session.setAttribute("session_crn",previous_crn);
+            }
       }
-      else {
-    printForm(out,selfUrl);
-      }
-    } 
+        
+        Enumeration keys = session.getAttributeNames();
+        while (keys.hasMoreElements())
+        {
+            String key = (String)keys.nextElement();
+            out.println(key + ": " + session.getValue(key) + "<br>");
+        }
+    
+        String waitlist_id = (String)session.getAttribute("session_crn");
+        if (waitlist_id!=null) {
+            printForm(out,selfUrl);
+            processForm(req, out, con, waitlist_id, selfUrl);
+        } else {
+            printForm(out,selfUrl);
+        }
+    }
     catch (SQLException e) {
       out.println("Error: "+e);
     }
@@ -77,14 +110,43 @@ public class WW_ViewWaitlist extends HttpServlet {
   // PROCESS THE REQUEST DATA
   // ========================================================================
    
-  private void processForm(HttpServletRequest req, PrintWriter out, Connection con)
+    
+    private void processRemove(HttpServletRequest req, PrintWriter out, Connection con, String remove_bid,String waitlist_id)
+    throws SQLException
+    {
+            PreparedStatement query = con.prepareStatement
+            ("DELETE from Waitlist where waitlist_id=? and student_bid=?");
+            query.setString(1, escape(waitlist_id) );
+            query.setString(2, escape(remove_bid) );
+        int result = query.executeUpdate();
+            out.println("Student Removed<br>");
+    }
+
+    
+    private void processSort(HttpServletRequest req, PrintWriter out, Connection con, String [] sort, String waitlist_id)
+                             throws SQLException
+    {
+     //use preparedStatements and executeUpdate the rankings
+        for (int i=0; i<ArrayUtils.getLength(sort); i++){
+        PreparedStatement query = con.prepareStatement
+        ("UPDATE Waitlist SET rank = ? where waitlist_id=? and student_bid=?");
+            
+            query.setString(1, String.valueOf(i+1) );
+            query.setString(2, escape(waitlist_id) );
+            query.setString(3, escape(sort[i]) );
+            int result = query.executeUpdate();
+         }
+        out.println("Order Saved!<br>");
+    }
+    
+    
+  private void processForm(HttpServletRequest req, PrintWriter out, Connection con, String waitlist_id, String selfUrl )
     throws SQLException
   { 
     //Insert Into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) 
-    String waitlist_id = req.getParameter("waitlist_id");
-    
+    //String waitlist_id = req.getParameter("waitlist_id");
     try {
-      printList( con,out,waitlist_id); 
+      printList( con,out,waitlist_id, selfUrl);
       printEmail( con, out,waitlist_id);
     } catch (Exception e) {
       out.println("<p>Error:"+e);
@@ -96,7 +158,7 @@ public class WW_ViewWaitlist extends HttpServlet {
   // ========================================================================
 
   // Prints list of students on searched for waitlist
-  private void printList(Connection con, PrintWriter out, String waitlist_id)
+  private void printList(Connection con, PrintWriter out, String waitlist_id, String selfUrl)
     throws SQLException
   {
     try {
@@ -110,7 +172,7 @@ public class WW_ViewWaitlist extends HttpServlet {
       
       Statement query = con.createStatement();
       ResultSet result = query.executeQuery
-  ("select * from Waitlist where waitlist_id = '"+waitlist_id+"' order by submitted_on asc");  
+  ("select * from Waitlist where waitlist_id = '"+waitlist_id+"' order by rank asc");
       out.println("<ul id='students'>");
       while (result.next()) {
   String student_bid = result.getString("student_bid");
@@ -121,19 +183,62 @@ public class WW_ViewWaitlist extends HttpServlet {
   String rank = result.getString("rank");
   String explanation = result.getString("explanation");
   if(!result.wasNull()) {
-    out.println("<li onclick=console.log('"+student_bid+"'); value='"+student_bid+"'>"+rank+
-          " "+student_name+" "+major_minor+" "+student_class+" "+explanation+"</li>");
+    out.println("<li id='"+student_bid+"'>"+rank+
+          " "+student_name+" "+major_minor+" "+student_class+" "+explanation+
+                "<button onclick=remove_student('"+student_bid+"')>Remove</button></li>");
+               // "<button onclick=remove_student('"+student_bid+"','"+student_name+"')>Remove</button></li>");
   } else {
     out.println("result was not null"); //when there's no result, print error statement
   }
       }
       out.println("</ul>");
-      out.println("<script>$('#students').sortable();</script>");
+        out.println("<form method='post' action='/ltang/servlet/WW_ViewWaitlist'><button  type='submit' name='waitlist_id' value="+waitlist_id+">Start Over</button></form>");
+        printScript(out, selfUrl);
     } catch (SQLException e) {
       out.println("<p>Error: "+e);
     }
   }
 
+private void printScript(PrintWriter out, String selfUrl){
+    
+        out.println("<button id='sort'>Save Order</button><br>");
+        out.println("<button id='email_button'>View Email List</button><br>");
+        out.println("<script>$('#students').sortable();</script>");
+        out.println("<script>"+
+                    "function post_to_url(path, params, method) {"+
+                    "method = method || 'post';"+
+                    "var form = document.createElement('form');"+
+                    "form.setAttribute('method', method);"+
+                    "form.setAttribute('action', path);"+
+                    "for(var key in params) {"+
+                    "     if(params.hasOwnProperty(key)) {"+
+                    "        var hiddenField = document.createElement('input');"+
+                    "        hiddenField.setAttribute('type', 'hidden');"+
+                    "        hiddenField.setAttribute('name', key);"+
+                    "        hiddenField.setAttribute('value', params[key]);"+
+                    "        form.appendChild(hiddenField);"+
+                    "    }"+
+                    "}"+
+                    "document.body.appendChild(form);"+
+                    "form.submit();"+
+                    "}");
+        out.println("function remove_student(bid) {"+
+                    "if (confirm('Are you sure you want to remove student from waitlist?')) {"+
+                        "post_to_url('"+selfUrl+"', {remove_bid:bid.toString()});"+
+                    "} else {"+
+                        "}"+
+                    "};");
+        out.println("$(document).ready(function(){"+
+                    "$('#sort').click(function(){"+
+                        "var sorted = $( '#students' ).sortable( 'toArray' );"+
+                        "post_to_url('"+selfUrl+"',{new_order:sorted});"+
+                        "});"+
+                    "$('#email_button').click(function(){"+
+                        "alert($('#email_list').text());"+
+                        "});"+
+                    "});"+
+                    "</script>");
+    }
   // Prints emails of all students on waitlist
   private void printEmail(Connection con, PrintWriter out, String waitlist_id)
     throws SQLException
@@ -142,11 +247,11 @@ public class WW_ViewWaitlist extends HttpServlet {
       Statement query = con.createStatement();
       ResultSet result = query.executeQuery
   ("select email from Person,Waitlist where Person.bid=Waitlist.student_bid and Waitlist.waitlist_id ="+waitlist_id);
-      out.println("Student Emails:<br>");
+      out.println("<div id='email_list' style='display: none;'> Students Emails:");
       while (result.next()) {
     out.println(result.getString("email")+";");
-      } 
-      out.println("<br>");
+      }
+      out.println("</div><br>");
     }
     catch (SQLException e) {
       out.println("<p>Error: "+e);
