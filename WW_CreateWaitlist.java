@@ -19,45 +19,48 @@ public class WW_CreateWaitlist extends HttpServlet {
 
   private void doRequest(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException, SQLException {
-  
+	
     res.setContentType("text/html; charset=UTF-8");
-    PrintWriter out = res.getWriter();
-    HttpSession session = req.getSession(true);
-    //String sessId = session.getId();
     
-    String user = (String)session.getAttribute("type");  
-  
-    if (user == "professor") {
+	PrintWriter out = res.getWriter();
+	HttpSession session = req.getSession(true);
+        String sessId = session.getId();
+    
+	String user = (String)session.getAttribute("type");  
+	
+	if (user.equals("professor")) {
 
-      String selfUrl = res.encodeURL(req.getRequestURI());
-      Enumeration keys = session.getAttributeNames();
-      while (keys.hasMoreElements()) {
+	String selfUrl = res.encodeURL(req.getRequestURI());
+        Enumeration keys = session.getAttributeNames();
+        while (keys.hasMoreElements())
+        {
         String key = (String)keys.nextElement();
         out.println(key + ": " + session.getValue(key) + "<br>");
-      }
-  
-      Connection con = null;
-      try {
-        printPageHeader(out);
-        con = WalterDSN.connect("walter_db");
-        String submit = escape(req.getParameter("submit"));
-        if (submit!=null) {
-          processForm(session,req, out, con);
         }
-        printForm(out,selfUrl);
+
+	
+    Connection con = null;
+    try {
+      printPageHeader(out);
+      con = ltang_DSN.connect("ltang_db");
+      String submit = escape(req.getParameter("submit"));
+      if (submit!=null) {
+  processForm(session,req, out, con);
       }
-      catch (SQLException e) {
-        out.println("Error: "+e);
-      }
-      catch (Exception e) {
-        e.printStackTrace(out);
-      }
-      finally {
-        close(con);
-      }
-    } else {
-      out.println("You don't have permission to view this page");
+      printForm(out,selfUrl);
     }
+    catch (SQLException e) {
+      out.println("Error: "+e);
+    }
+    catch (Exception e) {
+      e.printStackTrace(out);
+    }
+    finally {
+      close(con);
+    }
+} else {
+	out.println("You don't have permission to view this page");
+}
     out.println("</body>");
     out.println("</html>");
   }
@@ -67,23 +70,23 @@ public class WW_CreateWaitlist extends HttpServlet {
   private void close(Connection con) {
     if( con != null ) {
       try {
-        con.close();
+  con.close();
       }
       catch( Exception e ) {
-        e.printStackTrace();
+  e.printStackTrace();
       }
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
-    out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
-    out.println("</head><hr>");
-    out.println("<body>");
-  }
+    private void printPageHeader(PrintWriter out) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
     
   
   // ========================================================================
@@ -103,10 +106,11 @@ public class WW_CreateWaitlist extends HttpServlet {
     String type = req.getParameter("type");
     
     try {
-      if(updateDatabase(con,out,bid,crn,course_num,course_name,department,course_limit,type)) {
-        out.println("<p>Congratulations! You've successfully created a waitlist.");
-      } else {
-        out.println("<p>It looks like that waitlist already exists!");
+      if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type))
+        {
+    out.println("<p>Congratulations! You've successfully created a waitlist.");
+  } else {
+  out.println("<p>It looks like that waitlist already exists!");
       }
     } catch (Exception e) {
       out.println("<p>Error:"+e);
@@ -119,8 +123,8 @@ public class WW_CreateWaitlist extends HttpServlet {
   // ========================================================================
 
   private boolean updateDatabase(Connection con, PrintWriter out, String bid,
-                                 String crn, String course_num, String course_name,
-                                 String department, String course_limit, String type)
+         String crn, String course_num, String course_name,
+         String department, String course_limit, String type)
     throws SQLException
   {
     int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
@@ -137,8 +141,8 @@ public class WW_CreateWaitlist extends HttpServlet {
 
   // Insert new waitlist into the database
   private int insert(Connection con, PrintWriter out, String bid, String crn,
-                     String course_num, String course_name, String department,
-                     String course_limit, String type)
+         String course_num, String course_name, String department,
+         String course_limit, String type)
     throws SQLException
   {
     try {
@@ -169,7 +173,7 @@ public class WW_CreateWaitlist extends HttpServlet {
   // ========================================================================
 
   // Print the Waitlist form
-  private void printForm(PrintWriter out, String selfUrl)
+  private void printForm(PrintWriter out,String selfUrl)
     throws SQLException
   {
     out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td>"+
