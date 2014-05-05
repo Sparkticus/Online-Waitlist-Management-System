@@ -29,7 +29,7 @@ public class WW_CreateAccount extends HttpServlet {
     //String sessId = session.getId();    
     String session_bid = (String)session.getAttribute("session_bid");
     
-    printPageHeader(out);
+    printPageHeader(out,session);
         
     if (session_bid == null) {
       Connection con = null;
@@ -67,14 +67,35 @@ public class WW_CreateAccount extends HttpServlet {
     }
   }
   
-  private void printPageHeader(PrintWriter out) {
-    out.println("<html>");
-    out.println("<head>");
-    out.println("<title>Walter Waitlist</title>");
-    out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
-    out.println("</head><hr>");
-    out.println("<body>");
-  }
+    private int isLoggedIn(HttpSession session){
+        String session_bid = (String)session.getAttribute("session_bid");
+        if (session_bid!=null){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    private void printPageHeader(PrintWriter out,HttpSession session) {
+        out.println("<html>");
+        out.println("<head>");
+        out.println("<title>Walter Waitlist</title>");
+        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
+        if (isLoggedIn(session)>0){
+            String type = (String)session.getAttribute("session_type");
+            if (type.equals("student")){
+                out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
+            } else {
+                out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+            }
+            out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
+            out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
+        }
+        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
+        out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
+        out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
+        out.println("</head><hr>");
+        out.println("<body>");
+    }
     
   // ========================================================================
   // CONTROL PANEL: WHICH BUTTON WAS PRESSED?
@@ -125,21 +146,21 @@ public class WW_CreateAccount extends HttpServlet {
     String bid = req.getParameter("bid");
     String name = req.getParameter("name");
     String email = req.getParameter("email");
-    String usrname = req.getParameter("usrname");
     String pass = req.getParameter("pass");
     String year = req.getParameter("year");
     String major_minor = req.getParameter("major_minor");
-    session.setAttribute("type", "student");
+    session.setAttribute("session_type", "student");
     session.setAttribute("session_bid", bid);
     session.setAttribute("session_name", name);
     session.setAttribute("session_class", year);
     session.setAttribute("session_major_minor", major_minor);
     
     try {
-      if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
+      if(updateStudent(con,out,bid,name,email,pass,year,major_minor)) {
         printCreateAccount(req, out, con, selfUrl);
-        out.println("<p>Congratulations! You've successfully created an account.");
-        out.println("<p><form action=/walter/servlet/WW_WaitlistSearch><button type=submit>Search for a waitlist</button></form>");
+        //out.println("<p>Congratulations! You've successfully created an account.");
+        redirect(out,"WW_StudentHome");
+      
       } else {
         printCreateAccount(req, out, con, selfUrl);
         out.println("<p>It looks like you already have an account!"); // Make sure account for duplicate accounts
@@ -158,21 +179,21 @@ public class WW_CreateAccount extends HttpServlet {
     String bid = req.getParameter("bid");
     String name = req.getParameter("name");
     String email = req.getParameter("email");
-    String usrname = req.getParameter("usrname");
     String pass = req.getParameter("pass");
     String department = req.getParameter("department");
   session.setAttribute("session_bid", bid);
   session.setAttribute("session_name", name);
   session.setAttribute("session_email", email);
   session.setAttribute("session_department", department);
-  session.setAttribute("type", "professor");
+  session.setAttribute("session_type", "professor");
 
     try {
-      if(updateProfessor(con,out,bid,name,email,usrname,pass,department)) {
+      if(updateProfessor(con,out,bid,name,email,pass,department)) {
     printCreateAccount(req, out, con, selfUrl);
-    out.println("<p>Congratulations! You've successfully created your account.");
-        out.println("<p><form action=/walter/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
-        out.println("<p><form action=/walter/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
+          redirect(out,"WW_ProfHome");
+    //out.println("<p>Congratulations! You've successfully created your account.");
+     //   out.println("<p><form action=/walter/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
+     //   out.println("<p><form action=/walter/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
       } else {
         printCreateAccount(req, out, con, selfUrl);
         out.println("<p>It looks like you already have an account!");
@@ -183,17 +204,33 @@ public class WW_CreateAccount extends HttpServlet {
     }
   }
 
+    public void redirect(PrintWriter out,
+                         String url)
+    throws IOException, ServletException
+    {
+        //out.println("<meta http-equiv='refresh' content='1;url='"+url+"'>");
+        out.println("<script type='text/javascript'>");
+        out.println(" window.location.href = '"+url+"'");
+        out.println(" </script>");
+        out.println("<title>Page Redirection</title>");
+        out.println("</head>");
+        out.println(" <body>");
+        out.println("If you are not redirected automatically, follow the <a href='"+url+"'>link</a><br>");
+        out.println(" </body>");
+        out.println(" </html>");
+    }
+    
   // ========================================================================
   // HELPER METHODS: UPDATE THE DATABASES
   // ========================================================================
 
   // Updates the Student database
   private boolean updateStudent(Connection con, PrintWriter out, String bid, String name,
-                                String email, String usrname, String pass, String year,
+                                String email, String pass, String year,
                                 String major_minor)
     throws SQLException
   {
-    int result = insertStudent(con,out,bid,name,email,usrname,pass,year,major_minor);
+    int result = insertStudent(con,out,bid,name,email,pass,year,major_minor);
     if (result == 1) {
       return true;
     } else {
@@ -203,10 +240,10 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Updates the Professor database
   private boolean updateProfessor(Connection con, PrintWriter out, String bid, String name,
-                                  String email, String usrname, String pass, String department)
+                                  String email, String pass, String department)
     throws SQLException
   {
-    int result = insertProfessor(con,out,bid,name,email,usrname,pass,department);
+    int result = insertProfessor(con,out,bid,name,email,pass,department);
     if (result == 1) {
       return true;
     } else {
@@ -220,18 +257,18 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Insert new student into the database
   private int insertStudent(Connection con, PrintWriter out, String bid, String name,
-                            String email, String usrname, String pass, String year,
+                            String email, String pass, String year,
                             String major_minor)
     throws SQLException
   {
     try {
       PreparedStatement query1 = con.prepareStatement
-        ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
+        ("INSERT INTO Person (bid, name, email, usertype, pass) VALUES (?,?,?,?,?)");
       query1.setString(1, escape(bid)); //wrap this into a for loop later?
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
-      query1.setString(4, escape(usrname));
-      query1.setString(5, escape(pass));
+        query1.setString(4, "s");
+    query1.setString(5, escape(pass));
       int result1 = query1.executeUpdate();
       PreparedStatement query2 = con.prepareStatement
         ("INSERT INTO Student (bid, class_year, major_minor) VALUES (?,?,?)");
@@ -249,16 +286,16 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Insert new professor into the database
   private int insertProfessor(Connection con, PrintWriter out, String bid, String name,
-                              String email, String usrname, String pass, String department)
+                              String email, String pass, String department)
     throws SQLException
   {
     try {
       PreparedStatement query1 = con.prepareStatement
-        ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
+        ("INSERT INTO Person (bid, name, email, usertype, pass) VALUES (?,?,?,?,?)");
       query1.setString(1, escape(bid)); //wrap this into a for loop later?
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
-      query1.setString(4, escape(usrname));
+        query1.setString(4, "p");
       query1.setString(5, escape(pass));
       int result1 = query1.executeUpdate();
       PreparedStatement query2 = con.prepareStatement
@@ -300,7 +337,6 @@ public class WW_CreateAccount extends HttpServlet {
     out.println("<tr><td><p>Banner ID: <input required type='text' name='bid'></tr></td>");
     out.println("<tr><td><p>Full Name: <input required type='text' name='name'></tr></td>");
     out.println("<tr><td><p>Email Address: <input required type='text' name='email'></tr></td>");
-    out.println("<tr><td><p>Username: <input required type='text' name='usrname'></tr></td>");
     out.println("<tr><td><p>Password: <input required type='text' name='pass'></tr></td>");
     out.println("<tr><td><p>Class Year:");
     out.println("<select required name='year'>");
@@ -327,7 +363,6 @@ public class WW_CreateAccount extends HttpServlet {
     out.println("<tr><td><p>Banner ID: <input required type='text' name='bid'></tr></td>");
     out.println("<tr><td><p>Full Name: <input required type='text' name='name'></tr></td>");
     out.println("<tr><td><p>Email Address: <input required type='text' name='email'></tr></td>");
-    out.println("<tr><td><p>Username: <input required type='text' name='usrname'></tr></td>");
     out.println("<tr><td><p>Password: <input required type='text' name='pass'></tr></td>");
     //fix so that it's a drop down menu in the future
     out.println("<tr><td><p>Department: <input required type='text' name='department'></tr></td>");

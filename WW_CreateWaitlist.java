@@ -24,8 +24,11 @@ public class WW_CreateWaitlist extends HttpServlet {
     
 	PrintWriter out = res.getWriter();
 	HttpSession session = req.getSession(true);
-        String sessId = session.getId();
     
+    
+    String sessId = session.getId();
+    
+    printPageHeader(out,session);
 	String user = (String)session.getAttribute("type");  
 	
 	if (user.equals("professor")) {
@@ -37,15 +40,15 @@ public class WW_CreateWaitlist extends HttpServlet {
         String key = (String)keys.nextElement();
         out.println(key + ": " + session.getValue(key) + "<br>");
         }
-
+        
 	
     Connection con = null;
     try {
-      printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      
+      con = WalterDSN.connect("walter_db");
       String submit = escape(req.getParameter("submit"));
       if (submit!=null) {
-  processForm(session,req, out, con);
+          processForm(session,req, out, con);
       }
       printForm(out,selfUrl);
     }
@@ -78,12 +81,32 @@ public class WW_CreateWaitlist extends HttpServlet {
     }
   }
   
-    private void printPageHeader(PrintWriter out) {
+    private int isLoggedIn(HttpSession session){
+        String session_bid = (String)session.getAttribute("session_bid");
+        if (session_bid!=null){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
+        if (isLoggedIn(session)>0){
+            String type = (String)session.getAttribute("session_type");
+            if (type.equals("student")){
+                out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
+            } else {
+                out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+            }
+            out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
+            out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
+        }
+        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
+        out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
+        out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
         out.println("</head><hr>");
         out.println("<body>");
     }

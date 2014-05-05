@@ -18,9 +18,11 @@ public class WW_Signin extends HttpServlet {
         String selfUrl = res.encodeURL(req.getRequestURI());
         HttpSession session = req.getSession(true);
         String sessId = session.getId();
+        
+        printPageHeader(out,session);
         Connection con = null;
         try {
-            printPageHeader(out);
+            
             con = WalterDSN.connect("walter_db");
             String submit = req.getParameter("submit");
             if (submit==null){
@@ -36,17 +38,9 @@ public class WW_Signin extends HttpServlet {
                     }
                 }else{
                     
-                    out.println("Please enter a valid username and password<br>");
+                    out.println("Please enter a valid email and password<br>");
                     printLoginForm(req, out, con,selfUrl);
                 }
-                
-                Enumeration keys = session.getAttributeNames();
-                while (keys.hasMoreElements())
-                {
-                    String key = (String)keys.nextElement();
-                    out.println(key + ": " + session.getValue(key) + "<br>");
-                }
-                 out.println("<p><form action=/walter/servlet/WW_WaitlistSearch><button type=submit> Search for a waitlist </button></form>");
             }
         }
         catch (SQLException e) {
@@ -95,22 +89,21 @@ private void close(Connection con) {
     private int processLogin(HttpSession session, HttpServletRequest req, PrintWriter out, Connection con)
     throws SQLException
     {
-        String username = req.getParameter("username");
+        String email = req.getParameter("email");
         String password = req.getParameter("password");
 
         try {
             PreparedStatement query = con.prepareStatement
-            ("Select * from Person where username=? and pass=?");
-            query.setString(1, escape(username));
+            ("Select * from Person where email=? and pass=?");
+            query.setString(1, escape(email));
             query.setString(2, escape(password));
             ResultSet result = query.executeQuery();
-            String type = "Student"; //all logins are students for now, until update person table with field prof/student boolean
+            //String type = "Student"; //all logins are students for now, until update person table with field prof/student boolean
             if (result.next()) {
-                //String type = result.getString(type);
-                if (type == "Student") {
+                String type = result.getString("usertype");
+                if (type.equals("s") ) {
                     String bid=result.getString("bid");
                     String name =result.getString("name");
-                    String email=result.getString("email");
                     session.setAttribute("session_type", "student");
                     session.setAttribute("session_bid", bid);
                     session.setAttribute("session_name", name);
@@ -119,7 +112,6 @@ private void close(Connection con) {
                 } else {
                     String bid=result.getString("bid");
                     String name =result.getString("name");
-                    String email=result.getString("email");
                     session.setAttribute("session_type", "professor");
                     session.setAttribute("session_bid", bid);
                     session.setAttribute("session_name", name);
@@ -170,6 +162,8 @@ private void close(Connection con) {
             if (result.next()) {
                 String department=result.getString("department");
                 session.setAttribute("session_department",department);
+                session.setAttribute("session_bid",bid);
+                session.setAttribute("type","professor");
             }
         }
         catch (SQLException e) {
@@ -178,23 +172,43 @@ private void close(Connection con) {
         }
     }
     
-    private void printPageHeader(PrintWriter out) {
+    private int isLoggedIn(HttpSession session){
+        String session_bid = (String)session.getAttribute("session_bid");
+        if (session_bid!=null){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
+        out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
+        if (isLoggedIn(session)>0){
+            String type = (String)session.getAttribute("session_type");
+            if (type.equals("student")){
+                out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
+            } else {
+                out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+            }
+            out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
+        }
+        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
+        out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
+        out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
         out.println("</head><hr>");
         out.println("<body>");
     }
-    
     
     private void printLoginForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
     {
         out.println("<form method='post' action='"+selfUrl+"'>");
         out.println("<table cols='2'>");
-        out.println("<tr><td><p>Username <input required type='text' name='username'></tr></td>");
-        out.println("<tr><td><p>Password <input required type='text' name='password'></tr></td>");
+        out.println("<tr><td><p>Email <input required type='email' name='email'></tr></td>");
+        out.println("<tr><td><p>Password <input required type='password' name='password'></tr></td>");
         out.println("<tr><td><p><input type='submit' name='submit' value='Log In'></form>"+
                     "<form action=/walter/servlet/WW_CreateAccount><button type=submit>Sign up!</button></form></tr></td>");
         out.println("</table>");

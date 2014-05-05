@@ -28,12 +28,12 @@ public class WW_ProfHome extends HttpServlet {
     String sessId = session.getId();
     Connection con = null;
         
-    printPageHeader(out);
+    printPageHeader(out,session);
         
     String session_bid = (String)session.getAttribute("session_bid");
     String session_type =(String)session.getAttribute("type");
-        out.println(session_bid);
-        out.println(session_type);
+        //out.println(session_bid);
+       // out.println(session_type);
         
        if (session_bid == null || !session_type.equals("professor")){
            out.println("Please log in or create an account.");
@@ -56,14 +56,13 @@ public class WW_ProfHome extends HttpServlet {
             if (remove_waitlist!=null){
                 removeWaitlist(req, out, con,remove_waitlist);
             }
-                
             if (order!=null && previous_crn!=null){
                 String [] sort = StringUtils.split(order,',');
                 processSort(req, out, con,sort,previous_crn);
-            }
-                
-            String auto_crn = getProfActivity(session_bid, out, con, selfUrl);
-                
+                String not_using_auto_crn = getProfActivity(session_bid, out, con, selfUrl);
+            } else {
+                String auto_crn = getProfActivity(session_bid, out, con, selfUrl);
+            
             //out.println("prof crn: "+auto_crn);
             //out.println(previous_crn);
             //out.println(current_crn);
@@ -72,6 +71,7 @@ public class WW_ProfHome extends HttpServlet {
                     current_crn=auto_crn;
                 }
                 
+            }
             if (current_crn!=previous_crn) {
                 if (StringUtils.length(current_crn)>3){
                     session.setAttribute("session_crn",current_crn);
@@ -153,16 +153,36 @@ public class WW_ProfHome extends HttpServlet {
                 out.println("<br>");
             }
         }
+        out.println("<hr>");
         return waitlist_id;
     }
 
-    private void printPageHeader(PrintWriter out) {
+    private int isLoggedIn(HttpSession session){
+        String session_bid = (String)session.getAttribute("session_bid");
+        if (session_bid!=null){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'><script src='//code.jquery.com/jquery-1.10.2.js'></script><script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
+        if (isLoggedIn(session)>0){
+            String type = (String)session.getAttribute("session_type");
+            if (type.equals("student")){
+                out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
+            } else {
+                out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+            }
+            out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
+            out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
+        }
+        out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
+        out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
+        out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
         out.println("</head><hr>");
         out.println("<body>");
     }
