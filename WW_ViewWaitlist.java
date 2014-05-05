@@ -33,7 +33,7 @@ public class WW_ProfHome extends HttpServlet {
     String session_bid = (String)session.getAttribute("session_bid");
  
     try {
-        con = ltang_DSN.connect("ltang_db");
+        con = WalterDSN.connect("walter_db");
         
         String remove_bid =req.getParameter("remove_bid");
         out.println(remove_bid);
@@ -103,8 +103,8 @@ public class WW_ProfHome extends HttpServlet {
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
         out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'><script src='//code.jquery.com/jquery-1.10.2.js'></script><script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
         out.println("</head><hr>");
         out.println("<body>");
     }
@@ -195,7 +195,7 @@ public class WW_ProfHome extends HttpServlet {
   }
       }
       out.println("</ul>");
-        out.println("<form method='post' action='/ltang/servlet/WW_ViewWaitlist'><button  type='submit' name='waitlist_id' value="+waitlist_id+">Start Over</button></form>");
+        out.println("<form method='post' action='/walter/servlet/WW_ViewWaitlist'><button  type='submit' name='waitlist_id' value="+waitlist_id+">Start Over</button></form>");
         printScript(out, selfUrl);
     } catch (SQLException e) {
       out.println("<p>Error: "+e);

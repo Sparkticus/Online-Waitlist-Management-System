@@ -23,12 +23,12 @@ public class WW_StudentHome extends HttpServlet {
         
         if (session_bid == null){
             out.println("Please log in or create an account.");
-            out.println("<a href='/ltang/servlet/WW_Signin'>Click here to sign in</a>");
+            out.println("<a href='/walter/servlet/WW_Signin'>Click here to sign in</a>");
         } else {
             Connection con = null;
             try {
                 
-                con = ltang_DSN.connect("ltang_db");
+                con = WalterDSN.connect("walter_db");
                 String remove_crn =req.getParameter("remove_crn");
                 
                 if (remove_crn != null){
@@ -148,9 +148,9 @@ public class WW_StudentHome extends HttpServlet {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Signin'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
-        out.println("<form action=/ltang/servlet/WW_WaitlistSearch><button type=submit> Browse </button></form>");
+        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("<form action=/walter/servlet/WW_WaitlistSearch><button type=submit> Browse </button></form>");
         out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
         out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
         out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");

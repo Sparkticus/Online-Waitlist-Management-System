@@ -33,7 +33,7 @@ public class WW_WaitlistSearch extends HttpServlet {
     Connection con = null;
     try {
       printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      con = WalterDSN.connect("walter_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
     }
@@ -67,8 +67,8 @@ public class WW_WaitlistSearch extends HttpServlet {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
         out.println("</head><hr>");
         out.println("<body>");
     }
@@ -189,7 +189,7 @@ public class WW_WaitlistSearch extends HttpServlet {
     ResultSet rs = query.executeQuery();
     // Print the results
     while(rs.next()) {
- out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
+ out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }
@@ -205,7 +205,7 @@ public class WW_WaitlistSearch extends HttpServlet {
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
     // Print the results
     while(rs.next()) {
-      out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
+      out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }

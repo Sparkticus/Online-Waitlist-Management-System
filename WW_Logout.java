@@ -38,7 +38,7 @@ public class WW_Logout extends HttpServlet {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
         out.println("</head>");
         out.println("<body>");
     }

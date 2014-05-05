@@ -21,7 +21,7 @@ public class WW_Signin extends HttpServlet {
         Connection con = null;
         try {
             printPageHeader(out);
-            con = ltang_DSN.connect("ltang_db");
+            con = WalterDSN.connect("walter_db");
             String submit = req.getParameter("submit");
             if (submit==null){
                 printLoginForm(req, out, con,selfUrl);
@@ -46,7 +46,7 @@ public class WW_Signin extends HttpServlet {
                     String key = (String)keys.nextElement();
                     out.println(key + ": " + session.getValue(key) + "<br>");
                 }
-                 out.println("<p><form action=/ltang/servlet/WW_WaitlistSearch><button type=submit> Search for a waitlist </button></form>");
+                 out.println("<p><form action=/walter/servlet/WW_WaitlistSearch><button type=submit> Search for a waitlist </button></form>");
             }
         }
         catch (SQLException e) {
@@ -182,7 +182,7 @@ private void close(Connection con) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
+        out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
         out.println("</head><hr>");
         out.println("<body>");
     }
@@ -196,7 +196,7 @@ private void close(Connection con) {
         out.println("<tr><td><p>Username <input required type='text' name='username'></tr></td>");
         out.println("<tr><td><p>Password <input required type='text' name='password'></tr></td>");
         out.println("<tr><td><p><input type='submit' name='submit' value='Log In'></form>"+
-                    "<form action=/ltang/servlet/WW_CreateAccount><button type=submit>Sign up!</button></form></tr></td>");
+                    "<form action=/walter/servlet/WW_CreateAccount><button type=submit>Sign up!</button></form></tr></td>");
         out.println("</table>");
     }
 
