@@ -1,4 +1,4 @@
-/*;
+/**Joanna Bi and Lindsey Tang
    CS304: Final Project
    SPRING 2014 */
 
@@ -19,68 +19,68 @@ public class WW_CreateAccount extends HttpServlet {
 
   private void doRequest(HttpServletRequest req, HttpServletResponse res)
     throws ServletException, IOException, SQLException {
-	
-	
+  
+  
     res.setContentType("text/html; charset=UTF-8");
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
-        HttpSession session = req.getSession(true);
-//req.getSession().invalidate();
-	String sessId = session.getId();    
-	String session_bid = (String)session.getAttribute("session_bid");
+    HttpSession session = req.getSession(true);
+    //req.getSession().invalidate();
+    //String sessId = session.getId();    
+    String session_bid = (String)session.getAttribute("session_bid");
     
     printPageHeader(out);
         
-  if (session_bid == null) {
-    Connection con = null;
-    try {
-      con = ltang_DSN.connect("ltang_db");
-      processForm(session,req, out, con, selfUrl); //this does the work
-    }
-    catch (SQLException e) {
-      out.println("Error: "+e);
-    }
-    catch (Exception e) {
-      e.printStackTrace(out);
-    }
-    finally {
-      close(con);
-    }
-  } else {
+    if (session_bid == null) {
+      Connection con = null;
+      try {
+        con = WalterDSN.connect("walter_db");
+        processForm(session,req, out, con, selfUrl); //this does the work
+      }
+      catch (SQLException e) {
+        out.println("Error: "+e);
+      }
+      catch (Exception e) {
+        e.printStackTrace(out);
+      }
+      finally {
+        close(con);
+      }
+    } else {
       out.println("Please logout before creating a new account");
-      out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
-  }
+      out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+    }
     out.println("</body>");
     out.println("</html>");
   }
-        //
+  
   /**Close the database connection. Should be called in a "finally"
      clause, so that it gets done no matter what.*/
   private void close(Connection con) {
     if( con != null ) {
       try {
-  con.close();
+        con.close();
       }
       catch( Exception e ) {
-  e.printStackTrace();
+        e.printStackTrace();
       }
     }
   }
   
-    private void printPageHeader(PrintWriter out) {
-        out.println("<html>");
-        out.println("<head>");
-        out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("</head><hr>");
-        out.println("<body>");
-    }
+  private void printPageHeader(PrintWriter out) {
+    out.println("<html>");
+    out.println("<head>");
+    out.println("<title>Walter Waitlist</title>");
+    out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
+    out.println("</head><hr>");
+    out.println("<body>");
+  }
     
   // ========================================================================
   // CONTROL PANEL: WHICH BUTTON WAS PRESSED?
   // ========================================================================
 
-  private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
+  private void processForm(HttpSession session, HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
   {
     // Figure out which button was pressed
@@ -91,19 +91,19 @@ public class WW_CreateAccount extends HttpServlet {
       
       // STUDENT
       if (button.equals("STUDENT")) {
-  printStudentForm(req, out, con, selfUrl);
+        printStudentForm(req, out, con, selfUrl);
       }
       // PROFESSOR
       if (button.equals("PROFESSOR")) {
-  printProfessorForm(req, out, con, selfUrl);
+        printProfessorForm(req, out, con, selfUrl);
       }
       // CREATE STUDENT ACCOUNT
       if (button.equals("Add Student")) {
-  processStudent(session,req, out, con, selfUrl);
+        processStudent(session,req, out, con, selfUrl);
       }
       // CREATE PROFESSOR ACCOUNT
       if (button.equals("Add Professor")) {
-  processProfessor(session,req, out, con, selfUrl);
+        processProfessor(session,req, out, con, selfUrl);
       }
 
     } else {
@@ -129,20 +129,20 @@ public class WW_CreateAccount extends HttpServlet {
     String pass = req.getParameter("pass");
     String year = req.getParameter("year");
     String major_minor = req.getParameter("major_minor");
-	session.setAttribute("type", "student");
-	session.setAttribute("session_bid", bid);
-	session.setAttribute("session_name", name);
-	session.setAttribute("session_class", year);
-	session.setAttribute("session_major_minor", major_minor);
+    session.setAttribute("type", "student");
+    session.setAttribute("session_bid", bid);
+    session.setAttribute("session_name", name);
+    session.setAttribute("session_class", year);
+    session.setAttribute("session_major_minor", major_minor);
+    
     try {
       if(updateStudent(con,out,bid,name,email,usrname,pass,year,major_minor)) {
-  printCreateAccount(req, out, con, selfUrl);
-  out.println("<p>Congratulations! You've successfully created an account.");
-
-    out.println("<p><form action=/ltang/servlet/WW_WaitlistSearch><button type=submit>Search for a waitlist</button></form>");
+        printCreateAccount(req, out, con, selfUrl);
+        out.println("<p>Congratulations! You've successfully created an account.");
+        out.println("<p><form action=/walter/servlet/WW_WaitlistSearch><button type=submit>Search for a waitlist</button></form>");
       } else {
-  printCreateAccount(req, out, con, selfUrl);
-  out.println("<p>It looks like you already have an account!"); // I NEED TO ADD A CASE FOR THIS ie: SQL QUERY IN UPDATE STUDENT TO CHECK IF DUPLICATE BEFORE INSERTING
+        printCreateAccount(req, out, con, selfUrl);
+        out.println("<p>It looks like you already have an account!"); // Make sure account for duplicate accounts
       }
     } catch (Exception e) {
       printCreateAccount(req, out, con, selfUrl);
@@ -151,7 +151,7 @@ public class WW_CreateAccount extends HttpServlet {
   }
 
   // Process the form data submitted by a Professor
-  private void processProfessor(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
+  private void processProfessor(HttpSession session, HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
   {
     // This is the professor data
@@ -161,22 +161,21 @@ public class WW_CreateAccount extends HttpServlet {
     String usrname = req.getParameter("usrname");
     String pass = req.getParameter("pass");
     String department = req.getParameter("department");
-	session.setAttribute("session_bid", bid);
-	session.setAttribute("session_name", name);
-	session.setAttribute("session_email", email);
-	session.setAttribute("session_department", department);
-	session.setAttribute("type", "professor");
+  session.setAttribute("session_bid", bid);
+  session.setAttribute("session_name", name);
+  session.setAttribute("session_email", email);
+  session.setAttribute("session_department", department);
+  session.setAttribute("type", "professor");
 
     try {
       if(updateProfessor(con,out,bid,name,email,usrname,pass,department)) {
-  	printCreateAccount(req, out, con, selfUrl);
-  	out.println("<p>Congratulations! You've successfully created your account.");
-
-    out.println("<p><form action=/ltang/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
-  out.println("<p><form action=/ltang/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
+    printCreateAccount(req, out, con, selfUrl);
+    out.println("<p>Congratulations! You've successfully created your account.");
+        out.println("<p><form action=/walter/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
+        out.println("<p><form action=/walter/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
       } else {
-  printCreateAccount(req, out, con, selfUrl);
-  out.println("<p>It looks like you already have an account!");
+        printCreateAccount(req, out, con, selfUrl);
+        out.println("<p>It looks like you already have an account!");
       }
     } catch (Exception e) {
       printCreateAccount(req, out, con, selfUrl);
@@ -190,8 +189,8 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Updates the Student database
   private boolean updateStudent(Connection con, PrintWriter out, String bid, String name,
-        String email, String usrname, String pass, String year,
-        String major_minor)
+                                String email, String usrname, String pass, String year,
+                                String major_minor)
     throws SQLException
   {
     int result = insertStudent(con,out,bid,name,email,usrname,pass,year,major_minor);
@@ -204,7 +203,7 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Updates the Professor database
   private boolean updateProfessor(Connection con, PrintWriter out, String bid, String name,
-          String email, String usrname, String pass, String department)
+                                  String email, String usrname, String pass, String department)
     throws SQLException
   {
     int result = insertProfessor(con,out,bid,name,email,usrname,pass,department);
@@ -221,13 +220,13 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Insert new student into the database
   private int insertStudent(Connection con, PrintWriter out, String bid, String name,
-          String email, String usrname, String pass, String year,
-          String major_minor)
+                            String email, String usrname, String pass, String year,
+                            String major_minor)
     throws SQLException
   {
     try {
       PreparedStatement query1 = con.prepareStatement
-  ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
+        ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
       query1.setString(1, escape(bid)); //wrap this into a for loop later?
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
@@ -235,7 +234,7 @@ public class WW_CreateAccount extends HttpServlet {
       query1.setString(5, escape(pass));
       int result1 = query1.executeUpdate();
       PreparedStatement query2 = con.prepareStatement
-  ("INSERT INTO Student (bid, class_year, major_minor) VALUES (?,?,?)");
+        ("INSERT INTO Student (bid, class_year, major_minor) VALUES (?,?,?)");
       query2.setString(1, escape(bid));
       query2.setString(2, escape(year));
       query2.setString(3, escape(major_minor));
@@ -250,12 +249,12 @@ public class WW_CreateAccount extends HttpServlet {
 
   // Insert new professor into the database
   private int insertProfessor(Connection con, PrintWriter out, String bid, String name,
-            String email, String usrname, String pass, String department)
+                              String email, String usrname, String pass, String department)
     throws SQLException
   {
     try {
       PreparedStatement query1 = con.prepareStatement
-  ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
+        ("INSERT INTO Person (bid, name, email, username, pass) VALUES (?,?,?,?,?)");
       query1.setString(1, escape(bid)); //wrap this into a for loop later?
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
@@ -263,7 +262,7 @@ public class WW_CreateAccount extends HttpServlet {
       query1.setString(5, escape(pass));
       int result1 = query1.executeUpdate();
       PreparedStatement query2 = con.prepareStatement
-  ("INSERT INTO Professor (bid, department) VALUES (?,?)");
+        ("INSERT INTO Professor (bid, department) VALUES (?,?)");
       query2.setString(1, escape(bid));
       query2.setString(2, escape(department));
       int result2 = query2.executeUpdate();

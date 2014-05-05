@@ -24,16 +24,16 @@ public class WW_WaitlistSearch extends HttpServlet {
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
 
-	HttpSession session = req.getSession(true);
+    HttpSession session = req.getSession(true);
     String sessId = session.getId();
         
-  //  String type = (String)session.getAttribute("type");
- //   String session_bid = (String)session.getAttribute("session_bid");
+    //String type = (String)session.getAttribute("type");
+    //String session_bid = (String)session.getAttribute("session_bid");
 
     Connection con = null;
     try {
       printPageHeader(out);
-      con = ltang_DSN.connect("ltang_db");
+      con = WalterDSN.connect("walter_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
     }
@@ -55,23 +55,23 @@ public class WW_WaitlistSearch extends HttpServlet {
   private void close(Connection con) {
     if( con != null ) {
       try {
-  con.close();
+        con.close();
       }
       catch( Exception e ) {
-  e.printStackTrace();
+        e.printStackTrace();
       }
     }
   }
   
-    private void printPageHeader(PrintWriter out) {
-        out.println("<html>");
-        out.println("<head>");
-        out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/ltang/servlet/WW_Home'>Walter Waitlist</a></h1>");
-        out.println("<form method='post' action='/ltang/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
-        out.println("</head><hr>");
-        out.println("<body>");
-    }
+  private void printPageHeader(PrintWriter out) {
+    out.println("<html>");
+    out.println("<head>");
+    out.println("<title>Walter Waitlist</title>");
+    out.println("<h1><a href='/walter/servlet/WW_Home'>Walter Waitlist</a></h1>");
+    out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+    out.println("</head><hr>");
+    out.println("<body>");
+  }
   
   // ========================================================================
   // CONTROL PANEL: PRINT ALL WAITLISTS OR PRINT SEARCH RESULTS
@@ -107,9 +107,9 @@ public class WW_WaitlistSearch extends HttpServlet {
     
     try {
       if(foundResults(req,con,out,selfUrl,field,input)) {
-  // Do nothing; foundResults takes care of everything
+        // Do nothing; foundResults takes care of everything
       } else {
-  out.println("Sorry! It looks like we didn't find any results.");
+        out.println("Sorry! It looks like we didn't find any results.");
       } 
     } catch (Exception e) {
       out.println("Error: "+e);
@@ -122,28 +122,28 @@ public class WW_WaitlistSearch extends HttpServlet {
 
   // DETERMINE IF RESULTS IN SEARCH
   private boolean foundResults(HttpServletRequest req, Connection con, PrintWriter out, String selfUrl,
-             String field, String input)
+                               String field, String input)
     throws SQLException
   {
     try {
       PreparedStatement query = con.prepareStatement
-  ("SELECT count(*) FROM Course, Created_Waitlist, Person "+
-   "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
-   "AND " + escape(field) + " LIKE ?"); //drop down menu... will this be okay?
+        ("SELECT count(*) FROM Course, Created_Waitlist, Person "+
+         "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
+         "AND " + escape(field) + " LIKE ?"); //drop down menu... will this be okay?
       query.setString(1, "%"+escape(input)+"%"); //add wildcard
       ResultSet result = query.executeQuery();
 
       // Find out how many results
       int count = 0; //initialize count
       if(result.next()) {
-  count = result.getInt(1);
+        count = result.getInt(1);
       }
       // Print the results and return boolean
       if (count != 0) {
-  printSearchResults(req, out, con, selfUrl, count, field, input);
+        printSearchResults(req, out, con, selfUrl, count, field, input);
         return true; //yes results found
       } else {
-  return false; //no results found
+        return false; //no results found
       }
     } catch (Exception e) { // something went wrong
       out.println("Error: "+e);
@@ -189,10 +189,11 @@ public class WW_WaitlistSearch extends HttpServlet {
     ResultSet rs = query.executeQuery();
     // Print the results
     while(rs.next()) {
- out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
+ out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }
+
   // Print all Waitlists in the database
   private void  printWaitlists(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
@@ -205,7 +206,7 @@ public class WW_WaitlistSearch extends HttpServlet {
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid");
     // Print the results
     while(rs.next()) {
-      out.println("<form action=/ltang/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
+      out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
     }
     out.println("</ul>");
   }
