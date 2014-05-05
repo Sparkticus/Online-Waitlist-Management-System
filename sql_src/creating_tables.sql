@@ -1,4 +1,4 @@
-use ltang_db;
+use walter_db;
 
 
 drop table if exists Professor;
@@ -6,8 +6,6 @@ drop table if exists Student;
 drop table if exists Created_Waitlist; 
 drop table if exists On_Waitlist;
 drop table if exists Person;
--- drop table if exists Lab;
--- drop table if exists Class;
 drop table if exists Course;
 drop table if exists Waitlist;
 -- drop table if exists Corresponding_Lab; 
@@ -17,8 +15,8 @@ create table Person(
 	bid char(9) not null primary key,
 	name varchar(30) not null,
 	email varchar(30) not null,
-	username varchar(20) not null,
-	unique (username), 
+	usertype enum('p','s') not null,
+	unique (email), 
 	pass varchar(20) not null
 	)
 	ENGINE = InnoDB;
@@ -80,6 +78,7 @@ create table Corresponding_Lab(
 	)
 	ENGINE = InnoDB;
 **/
+
 -- define the waitlists table
 create table Waitlist(
 	waitlist_id int unsigned not null references Course(crn),
@@ -97,10 +96,10 @@ create table Waitlist(
 		on delete cascade on update cascade,
 	submitted_on timestamp default current_timestamp not null,
 	rank int unsigned, 
-	explanation varchar(250) default 'na'
+	explanation varchar(250) default ' '
 	)
 	ENGINE = InnoDB;
-
+/**
 -- define the “student has waitlists” table
 create table On_Waitlist(
 	bid char(9) not null references Student (bid)
@@ -110,7 +109,7 @@ create table On_Waitlist(
 	primary key (bid, waitlist_id) 
 	)
 	ENGINE = InnoDB;
-
+*/
 -- define the “professor manages course” table
 create table Created_Waitlist(
 	bid char(9),
