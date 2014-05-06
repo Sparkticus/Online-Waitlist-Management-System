@@ -29,7 +29,7 @@ public class WW_CreateWaitlist extends HttpServlet {
     String sessId = session.getId();
     
     printPageHeader(out,session);
-	String user = (String)session.getAttribute("type");  
+	String user = (String)session.getAttribute("session_type");
 	
 	if (user.equals("professor")) {
 
@@ -89,6 +89,8 @@ public class WW_CreateWaitlist extends HttpServlet {
             return -1;
         }
     }
+
+    
     private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
@@ -100,6 +102,7 @@ public class WW_CreateWaitlist extends HttpServlet {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
@@ -110,7 +113,7 @@ public class WW_CreateWaitlist extends HttpServlet {
         out.println("</head><hr>");
         out.println("<body>");
     }
-    
+
   
   // ========================================================================
   // PROCESS THE REQUEST DATA

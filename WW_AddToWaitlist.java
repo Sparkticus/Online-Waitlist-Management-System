@@ -42,7 +42,7 @@ public class WW_AddToWaitlist extends HttpServlet {
               con = WalterDSN.connect("walter_db");
               String submit = escape(req.getParameter("crn_submit"));
                 
-              out.println("submit crn: "+submit);
+              //out.println("submit crn: "+submit);
                 
               if (submit!=null) {
                   processForm(session,req, out, con);
@@ -100,6 +100,7 @@ public class WW_AddToWaitlist extends HttpServlet {
         }
     }
     private void printPageHeader(PrintWriter out,HttpSession session) {
+        out.println("<!DOCTYPE html>");
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter Waitlist</title>");
@@ -110,6 +111,7 @@ public class WW_AddToWaitlist extends HttpServlet {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
@@ -138,13 +140,14 @@ public class WW_AddToWaitlist extends HttpServlet {
     String explanation = req.getParameter("explanation");
     
     try {
-      if(updateDatabase(con,out,waitlist_id,student_bid,student_name,major_minor,student_class,explanation)) {
-        out.println("<p>Congratulations! You've successfully added yourself to a waitlist.");
-      } else {
-        out.println("<p>It looks like you're already on the waitlist!");
+        int rank =insertStudent(con,out,waitlist_id,student_bid,student_name,major_minor,student_class,explanation);
+      if(rank>0) {
+          out.println("<p>Congratulations! You've successfully added yourself to the waitlist for course crn "+waitlist_id);
+          out.println("<p>You are number <b>"+rank+"</b> in the waitlist.");
       }
-    } catch (Exception e) {
-      out.println("<p>Error:"+e);
+    }
+      catch (SQLException e) {
+        out.println("<p>Error: "+e);
     }
     
   }
@@ -158,40 +161,51 @@ public class WW_AddToWaitlist extends HttpServlet {
                                  String student_class, String explanation)
     throws SQLException
   {
-    int result = insert(con, out, waitlist_id, student_bid, student_name, major_minor, student_class, explanation);
+    int result = insertStudent(con, out, waitlist_id, student_bid, student_name, major_minor, student_class, explanation);
     if (result == 1) {
       return true;
     } else {
       return false;
     }
   }
-  
+
+    
   // ========================================================================
   // HELPER METHOD: ACTUAL INSERTING
   // ========================================================================
 
   // Insert new waitlist into the database
-  private int insert(Connection con, PrintWriter out, String waitlist_id,
+  private int insertStudent(Connection con, PrintWriter out, String waitlist_id,
                      String student_bid, String student_name, String major_minor,
                      String student_class, String explanation)
     throws SQLException
   {
-    try {
-      PreparedStatement query1 = con.prepareStatement
-        ("Insert into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) VALUES (?,?,?,?,?,0,?)");
-      query1.setString(1, escape(waitlist_id));
-      query1.setString(2, escape(student_bid));
-      query1.setString(3, escape(student_name));
-      query1.setString(4, escape(major_minor));
-      query1.setString(5, escape(student_class));
-      query1.setString(6, escape(explanation));
-      int result1 = query1.executeUpdate();
-    return result1;
+   try {
+        PreparedStatement query_max_rank = con.prepareStatement
+        ("select max(rank) from Waitlist where waitlist_id=?");
+        query_max_rank.setString(1, escape(waitlist_id));
+        ResultSet result_max_rank = query_max_rank.executeQuery();
+        Integer rank =1;
+        if (result_max_rank.next()) {
+            rank = Integer.parseInt(result_max_rank.getString("max(rank)"))+1;
+        }
+        PreparedStatement query1 = con.prepareStatement
+                ("Insert into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) VALUES (?,?,?,?,?,?,?)");
+              query1.setString(1, escape(waitlist_id));
+              query1.setString(2, escape(student_bid));
+              query1.setString(3, escape(student_name));
+              query1.setString(4, escape(major_minor));
+              query1.setString(5, escape(student_class));
+              query1.setString(6, escape(rank.toString()));
+            query1.setString(7, escape(explanation));
+            
+        query1.executeUpdate();
+        return rank;
     }
-    catch (SQLException e) {
-      if (e instanceof SQLIntegrityConstraintViolationException) {
-        out.println("check line 177- lindsey");
-      }  
+     catch (SQLException e) {
+       if (e instanceof SQLIntegrityConstraintViolationException) {
+          out.println("<p>It looks like you're already on the waitlist!");
+      }
       out.println("<p>Error: "+e);
       return -1; //error
     }
@@ -206,8 +220,8 @@ public class WW_AddToWaitlist extends HttpServlet {
     throws SQLException
   {
     out.println("<form method='post' action='"+selfUrl+"'> <table cols='2'>"+
-                "<tr><td><p> <textarea name='explanation' rows='3' cols='20'>Enter explanation here... </textarea> </tr></td> "+
-                "<tr><td><p><button  type='submit' name='crn_submit' value="+crn+">Add to Waitlist</button></td></tr></table></form>");
+                "<tr><td><p> <textarea name='explanation' rows='3' cols='20' placeholder='Enter explanation here...'></textarea></tr></td>"+
+                "<tr><td><button  type='submit' name='crn_submit' value="+crn+">Add to Waitlist</button></td></tr></table></form>");
   }
   
   // ========================================================================

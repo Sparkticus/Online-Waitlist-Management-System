@@ -86,6 +86,7 @@ public class WW_CreateAccount extends HttpServlet {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
@@ -336,7 +337,7 @@ public class WW_CreateAccount extends HttpServlet {
     out.println("<table cols='2'>");
     out.println("<tr><td><p>Banner ID: <input required type='text' name='bid'></tr></td>");
     out.println("<tr><td><p>Full Name: <input required type='text' name='name'></tr></td>");
-    out.println("<tr><td><p>Email Address: <input required type='text' name='email'></tr></td>");
+    out.println("<tr><td><p>Email Address: <input required type='email' name='email'></tr></td>");
     out.println("<tr><td><p>Password: <input required type='text' name='pass'></tr></td>");
     out.println("<tr><td><p>Class Year:");
     out.println("<select required name='year'>");
@@ -361,7 +362,7 @@ public class WW_CreateAccount extends HttpServlet {
     out.println("<p>Welcome to Walter Waitlist!</p><hr>");
     out.println("<table cols='2'>");
     out.println("<tr><td><p>Banner ID: <input required type='text' name='bid'></tr></td>");
-    out.println("<tr><td><p>Full Name: <input required type='text' name='name'></tr></td>");
+    out.println("<tr><td><p>Full Name: <input required type='email' name='name'></tr></td>");
     out.println("<tr><td><p>Email Address: <input required type='text' name='email'></tr></td>");
     out.println("<tr><td><p>Password: <input required type='text' name='pass'></tr></td>");
     //fix so that it's a drop down menu in the future

@@ -31,7 +31,7 @@ public class WW_ProfHome extends HttpServlet {
     printPageHeader(out,session);
         
     String session_bid = (String)session.getAttribute("session_bid");
-    String session_type =(String)session.getAttribute("type");
+    String session_type =(String)session.getAttribute("session_type");
         //out.println(session_bid);
        // out.println(session_type);
         
@@ -80,6 +80,7 @@ public class WW_ProfHome extends HttpServlet {
                 }
             }
             
+            out.println("<b>View Waitlist</b><br>");
             Enumeration keys = session.getAttributeNames();
             while (keys.hasMoreElements())
             {
@@ -124,6 +125,7 @@ public class WW_ProfHome extends HttpServlet {
     private String getProfActivity(String prof_bid, PrintWriter out, Connection con, String selfUrl)
     throws SQLException
     {
+        out.println("<b>Professor's Created Waitlist</b><br>");
         PreparedStatement query_student = con.prepareStatement
         ("select * from Created_Waitlist where bid=?");
         query_student.setString(1, escape(prof_bid));
@@ -148,8 +150,9 @@ public class WW_ProfHome extends HttpServlet {
                 out.println(" department: "+ department);
                 out.println(" course_limit: "+ course_limit);
                 out.println(" kind: "+ kind);
-                out.println("<button onclick=remove_waitlist('"+waitlist_id+"')>Remove</button>");
-                out.println("<form method='post' action='"+selfUrl+"'><button type='submit' name='view_waitlist' value='"+waitlist_id+"'>View</button></form>");
+                //out.println("<button onclick=remove_waitlist('"+waitlist_id+"')>Remove</button>");
+                out.println("<button onclick=view_waitlist('"+waitlist_id+"')>View</button>");
+                //out.println("<form method='post' action='"+selfUrl+"'><button type='submit' name='view_waitlist' value='"+waitlist_id+"'>View</button></form>");
                 out.println("<br>");
             }
         }
@@ -176,6 +179,7 @@ public class WW_ProfHome extends HttpServlet {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
@@ -186,6 +190,7 @@ public class WW_ProfHome extends HttpServlet {
         out.println("</head><hr>");
         out.println("<body>");
     }
+
     
   // ========================================================================
   // PROCESS THE REQUEST DATA
@@ -278,7 +283,11 @@ public class WW_ProfHome extends HttpServlet {
               }
         }
         out.println("</ul>");
-        out.println("<form method='post' action='/walter/servlet/WW_ViewWaitlist'><button  type='submit' name='waitlist_id' value="+waitlist_id+">Start Over</button></form>");
+        //out.println("<form method='post' action='/walter/servlet/WW_ProfHome'><button  type='submit' name='waitlist_id' value="+waitlist_id+">Start Over</button></form>");
+        out.println("<button onclick=start_over('"+waitlist_id+"')>Refresh Order</button>");
+        out.println("<button id='sort'>Save Order</button>");
+        out.println("<button id='email_button'>View Email List</button>");
+        out.println("<button onclick=remove_waitlist('"+waitlist_id+"')>Remove Waitlist</button><br>");
         printScript(out, selfUrl);
     } catch (SQLException e) {
       out.println("<p>Error: "+e);
@@ -286,9 +295,6 @@ public class WW_ProfHome extends HttpServlet {
   }
 
 private void printScript(PrintWriter out, String selfUrl){
-    
-        out.println("<button id='sort'>Save Order</button><br>");
-        out.println("<button id='email_button'>View Email List</button><br>");
         out.println("<script>$('#students').sortable();</script>");
         out.println("<script>"+
                     "function post_to_url(path, params, method) {"+
@@ -320,6 +326,12 @@ private void printScript(PrintWriter out, String selfUrl){
                     "} else {"+
                     "}"+
                     "};");
+    out.println("function start_over(waitlist_id) {"+
+                "post_to_url('"+selfUrl+"', {waitlist_id:waitlist_id.toString()});"+
+                "};");
+    out.println("function view_waitlist(waitlist_id) {"+
+                "post_to_url('"+selfUrl+"', {view_waitlist:waitlist_id.toString()});"+
+                "};");
         out.println("$(document).ready(function(){"+
                     "$('#sort').click(function(){"+
                         "var sorted = $( '#students' ).sortable( 'toArray' );"+

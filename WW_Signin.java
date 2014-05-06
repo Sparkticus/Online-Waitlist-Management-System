@@ -163,7 +163,6 @@ private void close(Connection con) {
                 String department=result.getString("department");
                 session.setAttribute("session_department",department);
                 session.setAttribute("session_bid",bid);
-                session.setAttribute("type","professor");
             }
         }
         catch (SQLException e) {
@@ -180,6 +179,7 @@ private void close(Connection con) {
             return -1;
         }
     }
+    
     private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
@@ -192,6 +192,7 @@ private void close(Connection con) {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
         }
@@ -201,6 +202,7 @@ private void close(Connection con) {
         out.println("</head><hr>");
         out.println("<body>");
     }
+
     
     private void printLoginForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
     throws SQLException

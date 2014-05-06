@@ -35,6 +35,8 @@ public class WW_StudentHome extends HttpServlet {
         
                     processRemove(req, out, con,session_bid,remove_crn);
                 }
+                
+                out.println("<b>Student Waitlist Activity</b><br>"); 
                 Enumeration keys = session.getAttributeNames();
                 while (keys.hasMoreElements())
                 {

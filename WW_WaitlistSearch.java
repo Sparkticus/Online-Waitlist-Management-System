@@ -71,6 +71,7 @@ public class WW_WaitlistSearch extends HttpServlet {
             return -1;
         }
     }
+    
     private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
@@ -82,6 +83,7 @@ public class WW_WaitlistSearch extends HttpServlet {
                 out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
             } else {
                 out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
+                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
             }
             out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
             out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
@@ -92,7 +94,7 @@ public class WW_WaitlistSearch extends HttpServlet {
         out.println("</head><hr>");
         out.println("<body>");
     }
-  
+
   // ========================================================================
   // CONTROL PANEL: PRINT ALL WAITLISTS OR PRINT SEARCH RESULTS
   // ========================================================================
