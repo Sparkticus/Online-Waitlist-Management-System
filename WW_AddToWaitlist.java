@@ -42,8 +42,6 @@ public class WW_AddToWaitlist extends HttpServlet {
               con = WalterDSN.connect("walter_db");
               String submit = escape(req.getParameter("crn_submit"));
                 
-              //out.println("submit crn: "+submit);
-                
               if (submit!=null) {
                   processForm(session,req, out, con);
               } else {
@@ -129,8 +127,7 @@ public class WW_AddToWaitlist extends HttpServlet {
    
   private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con)
     throws SQLException
-  { 
-    //Insert Into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) 
+  {
     String waitlist_id = (String)session.getAttribute("session_crn");
     String student_bid = (String)session.getAttribute("session_bid");
     String student_name =  (String)session.getAttribute("session_name");
@@ -184,10 +181,13 @@ public class WW_AddToWaitlist extends HttpServlet {
         PreparedStatement query_max_rank = con.prepareStatement
         ("select max(rank) from Waitlist where waitlist_id=?");
         query_max_rank.setString(1, escape(waitlist_id));
-        ResultSet result_max_rank = query_max_rank.executeQuery();
+        ResultSet result = query_max_rank.executeQuery();
         Integer rank =1;
-        if (result_max_rank.next()) {
-            rank = Integer.parseInt(result_max_rank.getString("max(rank)"))+1;
+        if (result.next()) {
+            String max_rank = result.getString("max(rank)");
+            if (max_rank!=null) {
+                rank = Integer.parseInt(max_rank)+1;
+            }
         }
         PreparedStatement query1 = con.prepareStatement
                 ("Insert into Waitlist (waitlist_id, student_bid, student_name, major_minor, student_class, rank, explanation) VALUES (?,?,?,?,?,?,?)");
@@ -204,9 +204,9 @@ public class WW_AddToWaitlist extends HttpServlet {
     }
      catch (SQLException e) {
        if (e instanceof SQLIntegrityConstraintViolationException) {
-          out.println("<p>It looks like you're already on the waitlist!");
+          out.println("<p>It looks like you're already on the waitlist for course crn "+waitlist_id+"!");
       }
-      out.println("<p>Error: "+e);
+      //out.println("<p>Error: "+e);
       return -1; //error
     }
   }

@@ -150,15 +150,15 @@ public class WW_CreateAccount extends HttpServlet {
     String pass = req.getParameter("pass");
     String year = req.getParameter("year");
     String major_minor = req.getParameter("major_minor");
-    session.setAttribute("session_type", "student");
-    session.setAttribute("session_bid", bid);
-    session.setAttribute("session_name", name);
-    session.setAttribute("session_class", year);
-    session.setAttribute("session_major_minor", major_minor);
-    
+      
     try {
       if(updateStudent(con,out,bid,name,email,pass,year,major_minor)) {
-        printCreateAccount(req, out, con, selfUrl);
+          session.setAttribute("session_type", "student");
+          session.setAttribute("session_bid", bid);
+          session.setAttribute("session_name", name);
+          session.setAttribute("session_class", year);
+          session.setAttribute("session_major_minor", major_minor);
+          printCreateAccount(req, out, con, selfUrl);
         //out.println("<p>Congratulations! You've successfully created an account.");
         redirect(out,"WW_StudentHome");
       
@@ -182,15 +182,14 @@ public class WW_CreateAccount extends HttpServlet {
     String email = req.getParameter("email");
     String pass = req.getParameter("pass");
     String department = req.getParameter("department");
-  session.setAttribute("session_bid", bid);
-  session.setAttribute("session_name", name);
-  session.setAttribute("session_email", email);
-  session.setAttribute("session_department", department);
-  session.setAttribute("session_type", "professor");
-
     try {
       if(updateProfessor(con,out,bid,name,email,pass,department)) {
-    printCreateAccount(req, out, con, selfUrl);
+          printCreateAccount(req, out, con, selfUrl);
+          session.setAttribute("session_bid", bid);
+          session.setAttribute("session_name", name);
+          session.setAttribute("session_email", email);
+          session.setAttribute("session_department", department);
+          session.setAttribute("session_type", "professor");
           redirect(out,"WW_ProfHome");
     //out.println("<p>Congratulations! You've successfully created your account.");
      //   out.println("<p><form action=/walter/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
@@ -362,8 +361,8 @@ public class WW_CreateAccount extends HttpServlet {
     out.println("<p>Welcome to Walter Waitlist!</p><hr>");
     out.println("<table cols='2'>");
     out.println("<tr><td><p>Banner ID: <input required type='text' name='bid'></tr></td>");
-    out.println("<tr><td><p>Full Name: <input required type='email' name='name'></tr></td>");
-    out.println("<tr><td><p>Email Address: <input required type='text' name='email'></tr></td>");
+    out.println("<tr><td><p>Full Name: <input required type='text' name='name'></tr></td>");
+    out.println("<tr><td><p>Email Address: <input required type='email' name='email'></tr></td>");
     out.println("<tr><td><p>Password: <input required type='text' name='pass'></tr></td>");
     //fix so that it's a drop down menu in the future
     out.println("<tr><td><p>Department: <input required type='text' name='department'></tr></td>");
