@@ -260,24 +260,26 @@ public class WW_ProfHome extends HttpServlet {
         out.println("<div class='container'>");
         out.println("<div class='header'>");
         out.println("<ul class='nav nav-pills pull-right'>");
-        out.println("<li><a href='/walter/servlet/WW_Signin'>Home</a></li>");
         if (isLoggedIn(session)>0){
             String type = (String)session.getAttribute("session_type");
             if (type.equals("student")){
-                out.println("<li class='active'><a href='/walter/servlet/WW_StudentHome'>Dashboard</a></li>");
+                out.println("<li><a href='/walter/servlet/WW_StudentHome'>Dashboard</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             } else {
                 out.println("<li class='active'><a href='/walter/servlet/WW_ProfHome'>Dashboard</a></li>");
                 out.println("<li><a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             }
+            out.println("<li><a href='/walter/servlet/WW_Logout'>Logout</a></li>");
+        } else {
+      out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
+            out.println("<li><a href='/walter/servlet/WW_Signin'>Sign in</a></li>");
         }
-        out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
-        out.println("<li><a href='#'>About</a></li>");
-        out.println("<li><a href='#'>Contact</a></li>");
-        out.println("<li><a href='WW_Logout'>Logout</a></li>");
         out.println("</ul>");
         out.println("<h3 class='text-muted'>Walter</h3>");
         out.println("</div>");
     }
+
     
     // Prints list of students on searched for waitlist
     private void printList(Connection con, PrintWriter out, String waitlist_id, String selfUrl)
@@ -285,6 +287,7 @@ public class WW_ProfHome extends HttpServlet {
     {
   try {
       Statement query2 = con.createStatement();
+        //out.println(waitlist_id);
       ResultSet result2 = query2.executeQuery("select * from Course where crn = "+waitlist_id);
       
       if (result2.next()) {

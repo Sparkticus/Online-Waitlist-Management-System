@@ -17,70 +17,70 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 
 public class WW_CreateWaitlist extends HttpServlet {
 
-  private void doRequest(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException, SQLException {
-	
-    res.setContentType("text/html; charset=UTF-8");
+    private void doRequest(HttpServletRequest req, HttpServletResponse res)
+  throws ServletException, IOException, SQLException {
+  
+  res.setContentType("text/html; charset=UTF-8");
     
-	PrintWriter out = res.getWriter();
-	HttpSession session = req.getSession(true);
+  PrintWriter out = res.getWriter();
+  HttpSession session = req.getSession(true);
+  //String sessId = session.getId();
     
-    
-    String sessId = session.getId();
-    
-    printPageHeader(out,session);
-	String user = (String)session.getAttribute("session_type");
-	
-	if (user.equals("professor")) {
+  printPageHeader(out,session);
+  String user = (String)session.getAttribute("session_type");
+  
+  if (user.equals("professor")) {
 
-	String selfUrl = res.encodeURL(req.getRequestURI());
-        Enumeration keys = session.getAttributeNames();
-        while (keys.hasMoreElements())
-        {
-        String key = (String)keys.nextElement();
-        out.println(key + ": " + session.getValue(key) + "<br>");
-        }
-        
-	
-    Connection con = null;
-    try {
-      
-      con = WalterDSN.connect("walter_db");
-      String submit = escape(req.getParameter("submit"));
-      if (submit!=null) {
-          processForm(session,req, out, con);
+      String selfUrl = res.encodeURL(req.getRequestURI());
+      /**
+      Enumeration keys = session.getAttributeNames();
+      while (keys.hasMoreElements()) {
+    String key = (String)keys.nextElement();
+    out.println(key + ": " + session.getValue(key) + "<br>");
       }
-      printForm(out,selfUrl);
-    }
-    catch (SQLException e) {
-      out.println("Error: "+e);
-    }
-    catch (Exception e) {
-      e.printStackTrace(out);
-    }
-    finally {
-      close(con);
-    }
-} else {
-	out.println("You don't have permission to view this page");
-}
-    out.println("</body>");
-    out.println("</html>");
-  }
-
-  /**Close the database connection. Should be called in a "finally"
-     clause, so that it gets done no matter what.*/
-  private void close(Connection con) {
-    if( con != null ) {
+      */
+      Connection con = null;
       try {
-  con.close();
+    con = WalterDSN.connect("walter_db");
+    String submit = escape(req.getParameter("submit"));
+    if (submit!=null) {
+        processForm(session,req, out, con);
+    }
+    printForm(out,selfUrl);
+      }
+      catch (SQLException e) {
+    out.println("Error: "+e);
+      }
+      catch (Exception e) {
+    e.printStackTrace(out);
+      }
+      finally {
+    close(con);
+      }
+  } else {
+      out.println("You don't have permission to view this page");
+  }
+  out.println("<div class='footer'>");
+  out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
+  out.println("</div>");
+  out.println("</body>");
+  out.println("</html>");
+    }
+
+    /**Close the database connection. Should be called in a "finally"
+       clause, so that it gets done no matter what.*/
+    private void close(Connection con) {
+  if( con != null ) {
+      try {
+    con.close();
       }
       catch( Exception e ) {
-  e.printStackTrace();
+    e.printStackTrace();
       }
-    }
   }
+    }
   
+    // Check if user is logged in
     private int isLoggedIn(HttpSession session){
         String session_bid = (String)session.getAttribute("session_bid");
         if (session_bid!=null){
@@ -90,90 +90,106 @@ public class WW_CreateWaitlist extends HttpServlet {
         }
     }
 
-    
-    private void printPageHeader(PrintWriter out,HttpSession session) {
+    // Print header and nav bar
+    private void printPageHeader(PrintWriter out, HttpSession session) {
         out.println("<html>");
         out.println("<head>");
-        out.println("<title>Walter Waitlist</title>");
-        out.println("<h1><a href='/walter/servlet/WW_Signin'>Walter Waitlist</a></h1>");
-        if (isLoggedIn(session)>0){
-            String type = (String)session.getAttribute("session_type");
-            if (type.equals("student")){
-                out.println("<a href='/walter/servlet/WW_StudentHome'>Dashboard</a>");
-            } else {
-                out.println("<a href='/walter/servlet/WW_ProfHome'>Dashboard</a>");
-                out.println("<a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a>");
-            }
-            out.println("<a href='/walter/servlet/WW_WaitlistSearch'>Browse</a>");
-            out.println("<a href='/walter/servlet/WW_Logout'>Log out</a>");
-        }
+        out.println("<title>Walter</title>");
+        // Here go the bootstrap links
+        out.println("<!-- Bootstrap core CSS -->");
+        out.println("<link href='../css/bootstrap.min.css' rel='stylesheet'>");
+        out.println("<!-- Custom styles for this template -->");
+        out.println("<link href='../css/jumbotron-narrow.css' rel='stylesheet'>");
+        // Here go the jquery links
         out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
         out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
         out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-        out.println("</head><hr>");
+        out.println("</head>");
+        // Print header and body
         out.println("<body>");
+        out.println("<div class='container'>");
+        out.println("<div class='header'>");
+        out.println("<ul class='nav nav-pills pull-right'>");
+        if (isLoggedIn(session)>0){
+            String type = (String)session.getAttribute("session_type");
+            if (type.equals("student")){
+                out.println("<li><a href='/walter/servlet/WW_StudentHome'>Dashboard</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
+            } else {
+                out.println("<li><a href='/walter/servlet/WW_ProfHome'>Dashboard</a></li>");
+                out.println("<li class='active'><a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
+            }
+            out.println("<li><a href='/walter/servlet/WW_Logout'>Logout</a></li>");
+        } else {
+            out.println("<li><a href='/walter/servlet/WW_Signin'>Sign in</a></li>");
+        }
+        out.println("</ul>");
+        out.println("<h3 class='text-muted'>Walter</h3>");
+        out.println("</div>");
     }
-
   
-  // ========================================================================
-  // PROCESS THE REQUEST DATA
-  // ========================================================================
+    // ========================================================================
+    // PROCESS THE REQUEST DATA
+    // ========================================================================
 
-  private void processForm(HttpSession session,HttpServletRequest req, PrintWriter out, Connection con)
-    throws SQLException
-  {
-    // Get the request data
-    String bid = (String)session.getAttribute("session_bid");
-    String crn = req.getParameter("crn");
-    String course_num = req.getParameter("course_num");
-    String course_name = req.getParameter("course_name");
-    String department = req.getParameter("department");
-    String course_limit = req.getParameter("course_limit");
-    String type = req.getParameter("type");
-    
-    try {
-      if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type))
-        {
-    out.println("<p>Congratulations! You've successfully created a waitlist.");
-  } else {
-  out.println("<p>It looks like that waitlist already exists!");
+    private void processForm(HttpSession session, HttpServletRequest req, PrintWriter out, Connection con)
+  throws SQLException
+    {
+  // Get the request data
+      
+  String bid = (String)session.getAttribute("session_bid");
+  String crn = req.getParameter("crn");
+  String course_num = req.getParameter("course_num");
+  String course_name = req.getParameter("course_name");
+  String department = req.getParameter("department");
+  String course_limit = req.getParameter("course_limit");
+  String type = req.getParameter("type");
+  //out.println("line 174 cr: "+crn);
+  try {
+      if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type)) {
+    out.println("<div class='alert alert-success'><strong>Congratulations!</strong> You've successfully created a waitlist.</div>");
+      } else {
+    out.println("<div class='alert alert-danger'><strong>Oops!</strong> It looks like that waitlist already exists!</div>");
       }
-    } catch (Exception e) {
+  } catch (Exception e) {
       out.println("<p>Error:"+e);
-    }
+  }
     
-  }
-  
-  // ========================================================================
-  // UPDATE THE DATABASE
-  // ========================================================================
-
-  private boolean updateDatabase(Connection con, PrintWriter out, String bid,
-         String crn, String course_num, String course_name,
-         String department, String course_limit, String type)
-    throws SQLException
-  {
-    int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
-    if (result == 1) {
-      return true;
-    } else {
-      return false;
     }
-  }
   
-  // ========================================================================
-  // HELPER METHOD: ACTUAL INSERTING
-  // ========================================================================
+    // ========================================================================
+    // UPDATE THE DATABASE
+    // ========================================================================
 
-  // Insert new waitlist into the database
-  private int insert(Connection con, PrintWriter out, String bid, String crn,
-         String course_num, String course_name, String department,
-         String course_limit, String type)
-    throws SQLException
-  {
-    try {
+    private boolean updateDatabase(Connection con, PrintWriter out, String bid,
+           String crn, String course_num, String course_name,
+           String department, String course_limit, String type)
+  throws SQLException
+    {
+  //   out.println("line 197 crn: "+crn);
+  int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
+  if (result == 1) {
+      return true;
+  } else {
+      return false;
+  }
+    }
+  
+    // ========================================================================
+    // HELPER METHOD: ACTUAL INSERTING
+    // ========================================================================
+
+    // Insert new waitlist into the database
+    private int insert(Connection con, PrintWriter out, String bid, String crn,
+           String course_num, String course_name, String department,
+           String course_limit, String type)
+  throws SQLException
+    {
+  try {
+      // out.println("line 217 crn: "+crn);
       PreparedStatement query1 = con.prepareStatement
-        ("INSERT INTO Course ( crn, course_num,  department, course_limit , kind, course_name  ) VALUES (?,?,?,?,?,?)");
+    ("INSERT INTO Course ( crn, course_num,  department, course_limit , kind, course_name  ) VALUES (?,?,?,?,?,?)");
       query1.setString(1, escape(crn)); //wrap this into a for loop later?
       query1.setString(2, escape(course_num));
       query1.setString(3, escape(department));
@@ -187,56 +203,72 @@ public class WW_CreateWaitlist extends HttpServlet {
       query2.setString(2, escape(crn));
       int result2 = query2.executeUpdate();
       return result1;
-    }
-    catch (SQLException e) {
+  }
+  catch (SQLException e) {
       out.println("<p>Error: "+e);
       return -1; //error
-    }
   }
+    }
   
-  // ========================================================================
-  // PRINT THE FORM
-  // ========================================================================
+    // ========================================================================
+    // PRINT THE FORM
+    // ========================================================================
 
-  // Print the Waitlist form
-  private void printForm(PrintWriter out,String selfUrl)
-    throws SQLException
-  {
-    out.println("<html><head> <title>Walter Waitlist</title> </head> <body> <form method='post' action='"+selfUrl+"'> <table cols='2'> <tr><td>"+
-"<tr><td><p>Course CRN: <input required type='text' name='crn'></tr></td> <tr><td><p>Course Number: <input required type='text' name='course_num'></tr></td> <tr><td><p>Course Name:<input required type='text' name='course_name'></td></tr><tr><td><p>Department: <input required type='text' name='department'></tr></td> <tr><td><p>Enrollment Limit: <input required type='text' name='course_limit'></tr></td> <tr><td><p>Type: <select required name='type'> <option value=''>Choose one</option> <option value='Lecture'>Lectue <option value='Lab'>Lab </select></td></tr> <tr><td><p><input type='submit' name='submit' value='Create Waitlist'></td></tr> </table> </form> </body></html");
-  }
+    // Print the Waitlist form
+    private void printForm(PrintWriter out, String selfUrl)
+  throws SQLException
+    {
+  out.println("<form role='form' method='post' action='"+selfUrl+"'>");
+  out.println("<div class='form-group'><label>Course CRN</label>");
+  out.println("<input required type='text' name='crn' class='form-control'></div>");
+  out.println("<div class='form-group'><label>Course number</label>");
+  out.println("<input required type='text' name='course_num' class='form-control'></div>");
+  out.println("<div class='form-group'><label>Course name</label>");
+  out.println("<input required type='text' name='course_name' class='form-control'></div>");
+  out.println("<div class='form-group'><label>Department</label>");
+  out.println("<input required type='text' name='department' class='form-control'></div>");
+  out.println("<div class='form-group'><label>Enrollment limit</label>");
+  out.println("<input required type='text' name='course_limit' class='form-control'></div>");
+  out.println("<div class='form-group'><label>Class type</label>");
+  out.println("<select required name='type' class='form-control'>");
+  out.println("<option value=''></option>");
+  out.println("<option value='Lecture'>Lecture");
+  out.println("<option value='Lab'>Lab");
+  out.println("</select></div>");
+  out.println("<input type='submit' name='submit' value='Create Waitlist' class='btn btn-default'></form>");
+    }
   
-  // ========================================================================
-  // HELPER METHOD: ESCAPING
-  // ========================================================================
+    // ========================================================================
+    // HELPER METHOD: ESCAPING
+    // ========================================================================
   
-  // Function to prevent XSS attacks
-  private static String escape(String raw) {
-    return StringEscapeUtils.escapeHtml(raw);
-  }
+    // Function to prevent XSS attacks
+    private static String escape(String raw) {
+  return StringEscapeUtils.escapeHtml(raw);
+    }
 
-  // ========================================================================
-  // These are the entry points for HttpServlets
-  // ========================================================================
+    // ========================================================================
+    // These are the entry points for HttpServlets
+    // ========================================================================
   
-  public void doGet(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException
-  {
-    try {
+    public void doGet(HttpServletRequest req, HttpServletResponse res)
+  throws ServletException, IOException
+    {
+  try {
       doRequest(req,res);
-    }
-    catch (SQLException e) {
-    }
   }
+  catch (SQLException e) {
+  }
+    }
   
-  public void doPost(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException
-  {
-    try {
+    public void doPost(HttpServletRequest req, HttpServletResponse res)
+  throws ServletException, IOException
+    {
+  try {
       doRequest(req,res);
-    }
-    catch (SQLException e) {
-    }
   }
+  catch (SQLException e) {
+  }
+    }
 
 }
