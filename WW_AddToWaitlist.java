@@ -30,12 +30,9 @@ public class WW_AddToWaitlist extends HttpServlet {
   String session_type = (String)session.getAttribute("session_type");
         
   if (session_type==null){
-      out.println("You don't have permission to add to waitlist<br>");
-      out.println("Please log in or create an account.");
-      out.println("<a href='/walter/servlet/WW_Signin'>Click here to go to home page</a>");
+      out.println("<div class='alert alert-danger'><strong>Sorry!</strong> You don't have permission to add yourself to a waitlist. Please <a href='/walter/servlet/WW_Signin'>login or create an account</a> to access this feature.</div>");
   } else {
       if (!session_type.equals("student")){
-    //out.println("You don't have permission to add to waitlist<br>");
     out.println("<div class='alert alert-danger'><strong>Sorry!</strong> You don't have permission to add yourself to a waitlist.</div>");
       } else {
     Connection con = null;
@@ -54,12 +51,8 @@ public class WW_AddToWaitlist extends HttpServlet {
       String crn = (String)session.getAttribute("session_crn");
                     
       // Print out session values
-      out.println("<p class='lead' >Add yourself to this waitlist:</p>");
+      out.println("<p class='lead' >Add yourself to this waitlist: "+crn+"</p>");
       Enumeration keys = session.getAttributeNames();
-      while (keys.hasMoreElements()) {
-          String key = (String)keys.nextElement();
-          out.println(key + ": " + session.getValue(key) + "<br>");
-      }
       printForm(out,selfUrl,crn);
         }
     }
@@ -93,7 +86,8 @@ public class WW_AddToWaitlist extends HttpServlet {
       }
   }
     }
-  
+
+    // Check if a user is logged in
     private int isLoggedIn(HttpSession session){
         String session_bid = (String)session.getAttribute("session_bid");
         if (session_bid!=null){
@@ -103,6 +97,7 @@ public class WW_AddToWaitlist extends HttpServlet {
         }
     }
 
+    // Print the page header
     private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
@@ -134,6 +129,7 @@ public class WW_AddToWaitlist extends HttpServlet {
             }
             out.println("<li><a href='WW_Logout'>Logout</a></li>");
         } else {
+      out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             out.println("<li><a href='/walter/servlet/WW_Signin'>Sign in</a></li>");
         }
         out.println("</ul>");
@@ -159,14 +155,12 @@ public class WW_AddToWaitlist extends HttpServlet {
   try {
       int rank =insertStudent(con,out,waitlist_id,student_bid,student_name,major_minor,student_class,explanation);
       if(rank>0) {
-    out.println("<p>Congratulations! You've successfully added yourself to the waitlist for course crn "+waitlist_id);
-    out.println("<p>You are number <b>"+rank+"</b> in the waitlist.");
+    out.println("<div class='alert alert-success'><strong>Congratulations!</strong> You've successfully added yourself to the waitlist for course crn "+waitlist_id+". You are number <b>"+rank+"</b> on the waitlist.</div>");
       }
   }
   catch (SQLException e) {
       out.println("<p>Error: "+e);
-  }
-    
+  }   
     }
 
     // ========================================================================
@@ -216,16 +210,14 @@ public class WW_AddToWaitlist extends HttpServlet {
       query1.setString(4, escape(major_minor));
       query1.setString(5, escape(student_class));
       query1.setString(6, escape(rank.toString()));
-            query1.setString(7, escape(explanation));
-            
+            query1.setString(7, escape(explanation));            
       query1.executeUpdate();
       return rank;
   }
   catch (SQLException e) {
       if (e instanceof SQLIntegrityConstraintViolationException) {
-    out.println("<p>It looks like you're already on the waitlist for course crn "+waitlist_id+"!");
+    out.println("<div class='alert alert-warning'>It looks like you're already on the waitlist for <b>course crn "+waitlist_id+"</b>!</div>");
       }
-      //out.println("<p>Error: "+e);
       return -1; //error
   }
     }
@@ -241,7 +233,7 @@ public class WW_AddToWaitlist extends HttpServlet {
   out.println("<form method='post' action='"+selfUrl+"'>");
   out.println("<div class='form-group'><label>Explanation</label>");
   out.println("<textarea class='form-control' rows='3' name='explanation' placeholder='Enter explanation here...'></textarea></div>");
-  out.println("<input type='submit' name='crn_submit' value='Add to Waitlist' class='btn btn-default'></form>");
+  out.println("<input type='submit' name='crn_submit' value='Add to Waitlist' class='btn btn-success'></form>");
     }
   
     // ========================================================================

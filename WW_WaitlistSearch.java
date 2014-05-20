@@ -18,21 +18,17 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 public class WW_WaitlistSearch extends HttpServlet {
 
     private void doRequest(HttpServletRequest req, HttpServletResponse res)
-  throws ServletException, IOException, SQLException {
-
+  throws ServletException, IOException, SQLException
+    {
   res.setContentType("text/html; charset=UTF-8");
   PrintWriter out = res.getWriter();
   String selfUrl = res.encodeURL(req.getRequestURI());
-
   HttpSession session = req.getSession(true);
-  String sessId = session.getId();
-  printPageHeader(out,session);
-  //String type = (String)session.getAttribute("type");
-  //String session_bid = (String)session.getAttribute("session_bid");
 
+  printPageHeader(out,session);
   Connection con = null;
-  try {
-      
+
+  try { 
       con = WalterDSN.connect("walter_db");
       printSearchField(req,out,con,selfUrl); //always print the search
       processForm(req,out,con,selfUrl); //this does all the work
@@ -65,7 +61,8 @@ public class WW_WaitlistSearch extends HttpServlet {
       }
   }
     }
-  
+
+    // Check if the user is logged in
     private int isLoggedIn(HttpSession session){
         String session_bid = (String)session.getAttribute("session_bid");
         if (session_bid!=null){
@@ -75,7 +72,8 @@ public class WW_WaitlistSearch extends HttpServlet {
         }
     }
     
-    private void printPageHeader(PrintWriter out,HttpSession session) {
+    // Print the page header
+    private void printPageHeader(PrintWriter out, HttpSession session) {
         out.println("<html>");
         out.println("<head>");
         out.println("<title>Walter</title>");
@@ -150,7 +148,6 @@ public class WW_WaitlistSearch extends HttpServlet {
       if(foundResults(req,con,out,selfUrl,field,input)) {
     // Do nothing; foundResults takes care of everything
       } else {
-    //out.println("Sorry! It looks like we didn't find any results.");
     out.println("<div class='alert alert-info'><strong>Sorry!</strong> It looks like we didn't find any results.</div>");
       } 
   } catch (Exception e) {
@@ -171,7 +168,7 @@ public class WW_WaitlistSearch extends HttpServlet {
       PreparedStatement query = con.prepareStatement
     ("SELECT count(*) FROM Course, Created_Waitlist, Person "+
      "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
-     "AND " + escape(field) + " LIKE ?"); //drop down menu... will this be okay?
+     "AND " + escape(field) + " LIKE ?");
       query.setString(1, "%"+escape(input)+"%"); //add wildcard
       ResultSet result = query.executeQuery();
 
@@ -205,9 +202,7 @@ public class WW_WaitlistSearch extends HttpServlet {
   out.println("<div class='panel panel-primary'>"+
         "<div class='panel-heading'><h3 class='panel-title'>Search the waitlist database:</h3></div>"+
         "<div class='panel-body'>");
-  //out.println("<p class='lead'>Search the waitlist database:</p>");
   out.println("<div class='form-group'>");
-  //out.println("<label>Search the waitlist database by: </label>");
   out.println("<select class='form-control' required name='field'>");
   out.println("<option value=''>Choose type</option>");
   out.println("<option value='department'>Department");
@@ -229,15 +224,12 @@ public class WW_WaitlistSearch extends HttpServlet {
             int count, String field, String input)
   throws SQLException
     {
-  //out.println("We found "+count+ " results in your search:");
-  out.println("<div class='alert alert-info'>"+
-        "We found <strong>"+count+"</strong> resuts in your search!"+
-        "</div>");
+  out.println("<div class='alert alert-info'>We found <strong>"+count+"</strong> resuts in your search!</div>");
   PreparedStatement query = con.prepareStatement
       ("SELECT Course.crn, course_num, course_name, department, course_limit, kind, name, email "+
        "FROM Course, Created_Waitlist, Person "+
        "WHERE Course.crn=Created_Waitlist.crn and Person.bid=Created_Waitlist.bid "+
-       "AND " + escape(field) + " LIKE ?"); //IS THIS OKAY. SQL INJECTION??? It's a dropdown... [ASK]
+       "AND " + escape(field) + " LIKE ?");
   query.setString(1, "%"+escape(input)+"%"); //add wildcard
   ResultSet rs = query.executeQuery();
   // Print the results
@@ -247,16 +239,15 @@ public class WW_WaitlistSearch extends HttpServlet {
   out.println("<table class='table table-hover'><thead><tr><th>CRN</th><th>Course Number</th><th>Course Name</th><th>Department</th><th>Type</th><th>Course Limit</th><th>Instructor</th><th>Instructor Email</th><th>Add</th></thead><tbody>");
   while(rs.next()) {
       out.println("<tr><td>"+rs.getString(1)+"</td>"); //crn
-      out.println("<td>"+rs.getString(2)+"</td>"); //course #
+      out.println("<td>"+rs.getString(2)+"</td>"); //course number
       out.println("<td>"+rs.getString(3)+"</td>"); //course name
       out.println("<td>"+rs.getString(4)+"</td>"); //department
       out.println("<td>"+rs.getString(6)+"</td>"); //type
       out.println("<td>"+rs.getString(5)+"</td>"); //course limit
       out.println("<td>"+rs.getString(7)+"</td>"); //instructor
       out.println("<td>"+rs.getString(8)+"</td>"); //instructor email
-      out.println("<td><form action=/walter/servlet/WW_AddToWaitlist><button class='btn btn-xs btn-success' type='submit' name='crn' value="+rs.getString(1)+">Add</button></td>"); //Add to waitlist option
+      out.println("<td><form action=/walter/servlet/WW_AddToWaitlist><button class='btn btn-xs btn-success' type='submit' name='crn' value="+rs.getString(1)+">Add</button></td>"); //add to waitlist option
       out.println("</tr>");
-      //out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
   }
   out.println("</tbody></table>"); //close table
   out.println("</div></div>"); // close panel div
@@ -286,7 +277,6 @@ public class WW_WaitlistSearch extends HttpServlet {
       out.println("<td>"+rs.getString(8)+"</td>"); //instructor email
       out.println("<td><form action=/walter/servlet/WW_AddToWaitlist><button class='btn btn-xs btn-success' type='submit' name='crn' value="+rs.getString(1)+">Add</button></td>"); //Add to waitlist option
       out.println("</tr>");
-      //out.println("<form action=/walter/servlet/WW_AddToWaitlist><button type='submit'  name='crn' value="+rs.getString(1)+">"+rs.getString(1)+" "+rs.getString(2)+" "+rs.getString(3)+" "+rs.getString(4)+" "+rs.getString(5)+" "+rs.getString(6)+" "+rs.getString(7)+" "+rs.getString(8)+"</button><br>");
   }
   out.println("</tbody></table>"); //close table
   out.println("</div></div>"); // close panel div

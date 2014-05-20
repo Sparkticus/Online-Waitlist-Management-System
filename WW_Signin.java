@@ -24,15 +24,15 @@ public class WW_Signin extends HttpServlet {
     PrintWriter out = res.getWriter();
     String selfUrl = res.encodeURL(req.getRequestURI());
     HttpSession session = req.getSession(true);
-    //String sessId = session.getId();
         
     printPageHeader(out,session,selfUrl);
     Connection con = null;
+
     try {
         con = WalterDSN.connect("walter_db");
         String submit = req.getParameter("submit");
-        if (submit==null){
-        //printLoginForm(req, out, con,selfUrl);
+        if (submit==null) {
+        // Do nothing; only print page header
         } else {
         if (processLogin(session,req, out,con)>0){
             String type = (String)session.getAttribute("session_type");
@@ -41,10 +41,9 @@ public class WW_Signin extends HttpServlet {
             } else {
             redirect(out,"WW_ProfHome");
             }
-        } else {      
+        } else {
             out.println("<div class='alert alert-danger'>");
             out.println("<b>Oops!</b> It looks like we didn't recognize your email and/or password. Please try again!</div>");
-            //printLoginForm(req, out, con,selfUrl);
         }
         }
     } catch (SQLException e) {
@@ -81,16 +80,14 @@ public class WW_Signin extends HttpServlet {
 
     // Redirect Page
     public void redirect(PrintWriter out, String url)
-      throws IOException, ServletException
-    {
-    //out.println("<meta http-equiv='refresh' content='1;url='"+url+"'>");
-    
+    throws IOException, ServletException
+    {    
     out.println("<script type='text/javascript'>");
     out.println("window.location.href = '"+url+"'");
     out.println("</script>");
     out.println("<title>Page Redirection</title>");
     out.println("</head>");
-    out.println("<body>");
+        out.println("<body style='background-image: url(http://ih3.redbubble.net/image.11008790.1042/flat,800x800,070,f.jpg);'>");
         out.println("If you are not redirected automatically, follow the <a href='"+url+"'>link</a><br>");
         out.println("</body>");
         out.println("</html>");
@@ -141,8 +138,8 @@ public class WW_Signin extends HttpServlet {
     }
 
     // User is a student
-    private void getStudent(HttpSession session,HttpServletRequest req,
-                PrintWriter out,Connection con, String bid)
+    private void getStudent(HttpSession session, HttpServletRequest req, PrintWriter out,
+                Connection con, String bid)
     throws SQLException
     {
         try {   
@@ -163,7 +160,7 @@ public class WW_Signin extends HttpServlet {
     }
     
     // User is a professor
-    private void getProf(HttpSession session,HttpServletRequest req, PrintWriter out,
+    private void getProf(HttpSession session, HttpServletRequest req, PrintWriter out,
              Connection con, String bid)
     throws SQLException
     {
@@ -219,7 +216,6 @@ public class WW_Signin extends HttpServlet {
     out.println("<ul class='nav nav-pills pull-right'>");
         if (isLoggedIn(session)>0){
             String type = (String)session.getAttribute("session_type");
-        //out.println("<ul class='nav nav-pills pull-right'>");
             if (type.equals("student")){
                 out.println("<li><a href='/walter/servlet/WW_StudentHome'>Dashboard</a></li>");
             } else {
@@ -228,14 +224,11 @@ public class WW_Signin extends HttpServlet {
             }
             out.println("<li><a href='WW_Logout'>Logout</a></li>");
         } else {
-            //out.println("<li class='active'><a href="+selfUrl+">Sign in</a></li>");
         out.println("<form class='navbar-form navbar-right' role='form' method='post' action='/walter/servlet/WW_Signin'>"+
             "<div class='form-group'><input required type='email' placeholder='Email' name='email' class='form-control'></div> "+
             "<div class='form-group'><input required type='password' placeholder='Password' name='password' class='form-control'></div> "+
             "<input type='submit' name='submit' value='Sign in' class='btn btn-success'></form>");
-        //out.println("<ul class='nav nav-pills pull-right'>");
         }
-        //out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
     out.println("</ul>");
     out.println("<h3 class='text-muted'>Walter</h3>");
     out.println("</div>");
@@ -245,32 +238,12 @@ public class WW_Signin extends HttpServlet {
     private void printSignup(PrintWriter out) {
     out.println("<div class='jumbotron'>");
     out.println("<h1>Welcome!</h1>");
-        out.println("<p class='lead'>Welcome to the alpha version of <b>Walter, the Online Waitlist Management System</b>.<br>By automating the process of creating and managing waitlists, we hope to make our application a convenient and easy to use alternative to manually processing data.</p><p>We hope you enjoy our app!</p><br>");
+        out.println("<p class='lead'>Welcome to the beta version of <b>Walter, the Online Waitlist Management System</b>.<br> Walter is a database-driven web application that helps professors and students manage class waitlists.</p><br>");
         out.println("<p><a class='btn btn-lg btn-success' href='WW_CreateAccount' role='button'>Sign up today!</a>&nbsp;&nbsp;&nbsp;");
-    out.println("&nbsp;&nbsp;&nbsp;<a class='btn btn-lg btn-success' href='WW_WaitlistSearch' role='button'>Browse around!</a>");
+    out.println("&nbsp;&nbsp;&nbsp;<a class='btn btn-lg btn-success' href='WW_WaitlistSearch' role='button'>Browse waitlists!</a>");
         out.println("</div>");
     }
 
-    /**
-    // Print login form
-    private void printLoginForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
-    throws SQLException
-    {
-        out.println("<div class='jumbotron'>");
-        out.println("<h1>Returning?</h1>");
-    out.println("<p class='lead'>Returning user? Login below!");
-        out.println("<form method='post' action='"+selfUrl+"'>");
-        out.println("<center><table cols='2'>");
-        out.println("<tr><td><p>Email <input required type='email' name='email'></tr></td>");
-        out.println("<tr><td><p>Password <input required type='password' name='password'></tr></td>");
-    out.println("<tr><td><p><input type='submit' name='submit' value='Log In'></form></tr></td>");
-        //out.println("<tr><td><p><input type='submit' name='submit' value='Log In'></form>"+
-        //            "<form action=/walter/servlet/WW_CreateAccount><button type=submit>Sign up!</button></form>"+
-    //        "</tr></td>");
-        out.println("</table></center>");
-    out.println("</p></div>");
-    }
-    */
     // ========================================================================
     // HELPER METHOD: ESCAPING
     // =======================================================================

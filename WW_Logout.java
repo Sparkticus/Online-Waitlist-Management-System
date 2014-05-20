@@ -18,34 +18,27 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 public class WW_Logout extends HttpServlet {
     
     private void doRequest(HttpServletRequest req, HttpServletResponse res)
-    throws ServletException, IOException {
-        
+    throws ServletException, IOException
+    {
         res.setContentType("text/html; charset=UTF-8");
         PrintWriter out = res.getWriter();
         String selfUrl = res.encodeURL(req.getRequestURI());
         HttpSession session = req.getSession(true);
-        //String sessId = session.getId();
         
         printPageHeader(out);
-        try { 
-            String session_bid = (String)session.getAttribute("session_bid");
+        
+        if (isLoggedIn(session)>0){
             String name = (String)session.getAttribute("session_name");
             req.getSession().invalidate();
-            if (!name.equals(null)){
-        // Print 'logged out' message
-        out.println("<div class='jumbotron'>");
-        out.println("<h2>Goodbye "+name+"</h1>");
-        out.println("<p class='lead'>We hope you visit again soon!</p>");
-        //out.println("<p><a class='btn btn-lg btn-primary' href='WW_Signin' role='button'>Return home</a></p>");
+            out.println("<div class='jumbotron'>");
+            out.println("<h2>Goodbye "+name+"</h1>");
+            out.println("<p class='lead'>We hope you visit again soon!</p>");
+            out.println("</div>");
+        }
+        
+        out.println("<div class='footer'>");
+        out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
         out.println("</div>");
-            }
-        }
-    catch (Exception e) {
-            e.printStackTrace(out);
-        }
-    out.println("<div class='footer'>");
-    out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
-    out.println("</div>");
         out.println("</body>");
         out.println("</html>");       
     }
@@ -76,7 +69,16 @@ public class WW_Logout extends HttpServlet {
     out.println("<h3 class='text-muted'>Walter</h3>");
     out.println("</div>");
     }
-
+    
+    private int isLoggedIn(HttpSession session){
+        String session_bid = (String)session.getAttribute("session_bid");
+        if (session_bid!=null){
+            return 1;
+        } else {
+            return -1;
+        }
+    }
+    
     // ========================================================================
     // These are the entry points for HttpServlets
     // ========================================================================

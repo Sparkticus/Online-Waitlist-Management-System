@@ -24,14 +24,11 @@ public class WW_StudentHome extends HttpServlet {
         PrintWriter out = res.getWriter();
         String selfUrl = res.encodeURL(req.getRequestURI());
         HttpSession session = req.getSession(true);
-        //String sessId = session.getId();
         printPageHeader(out,session);
         
         String session_bid = (String)session.getAttribute("session_bid");
         
         if (session_bid == null){
-            //out.println("Please log in or create an account.");
-            //out.println("<a href='/walter/servlet/WW_Signin'>Click here to sign in</a>");
         out.println("<div class='alert alert-danger'><strong>Oh no!</strong> To view this page you must log in or create an account. <a href='/walter/servlet/WW_Signin'>Click here to sign in</a>.</div>");
         } else {
             Connection con = null;
@@ -44,13 +41,15 @@ public class WW_StudentHome extends HttpServlet {
                     processRemove(req, out, con,session_bid,remove_crn);
                 }
         out.println("<div class='panel panel-primary'>"+
-                "<div class='panel-heading'><h3 class='panel-title'>Student Stats</h3></div>"+
+                "<div class='panel-heading'><h3 class='panel-title'>Account Information</h3></div>"+
                 "<div class='panel-body'>");
-                Enumeration keys = session.getAttributeNames();
-                while (keys.hasMoreElements()) {
-                    String key = (String)keys.nextElement();
-                    out.println(key + ": " + session.getValue(key) + "<br>");
-                }
+                
+                out.println("Name: "+(String)session.getAttribute("session_name"));
+                out.println("<br>Banner ID: "+(String)session.getAttribute("session_bid"));
+                out.println("<br>Email: "+(String)session.getAttribute("session_email"));
+                out.println("<br>Major/Minor: "+(String)session.getAttribute("session_major_minor"));
+                out.println("<br>Class: "+(String)session.getAttribute("session_class"));
+                out.println("<br>Account Type: Student");
         out.println("</div></div>");
                 getStudentActivity(session_bid, out, con);
                 printScript(out,selfUrl);
@@ -97,7 +96,7 @@ public class WW_StudentHome extends HttpServlet {
         query_student.setString(1, escape(student_bid));
         ResultSet result_student = query_student.executeQuery();
     out.println("<div class='panel panel-primary'>"+
-            "<div class='panel-heading'><h3 class='panel-title'>Currently waitlisted on:</h3></div>"+
+            "<div class='panel-heading'><h3 class='panel-title'>Waitlist Activity</h3></div>"+
             "<div class='panel-body'>");
     out.println("<table class='table table-hover'><thead><tr><th>Course #</th><th>Course Name</th><th>Department</th><th>Type</th><th>Course Limit</th><th>Rank</th><th>Remove</th></thead><tbody>");
         while (result_student.next()) {
@@ -114,7 +113,6 @@ public class WW_StudentHome extends HttpServlet {
                 String course_limit = result_waitlist.getString("course_limit");
                 String kind = result_waitlist.getString("kind");
         // Print out student activity (waitlists they are on)
-                //out.println("<tr><td>"+waitlist_id+"</td>");
                 out.println("<tr><td>"+course_num+"</td>");
                 out.println("<td>"+course_name+"</td>");
         out.println("<td>"+department+"</td>");
@@ -224,35 +222,6 @@ public class WW_StudentHome extends HttpServlet {
         out.println("<h3 class='text-muted'>Walter</h3>");
         out.println("</div>");
     }
-    /**
-    // Print this if user not logged in
-    private void printPageHeader2(PrintWriter out) {
-    out.println("<html>");
-        out.println("<head>");
-        out.println("<title>Walter</title>");
-    // Here go the bootstrap links
-    out.println("<!-- Bootstrap core CSS -->");
-        out.println("<link href='../css/bootstrap.min.css' rel='stylesheet'>");
-        out.println("<!-- Custom styles for this template -->");
-        out.println("<link href='../css/jumbotron-narrow.css' rel='stylesheet'>");
-        // Here go the jquery links
-    out.println("<link rel='stylesheet' href='//code.jquery.com/ui/1.10.4/themes/smoothness/jquery-ui.css'>");
-        out.println("<script src='//code.jquery.com/jquery-1.10.2.js'></script>");
-        out.println("<script src='//code.jquery.com/ui/1.10.4/jquery-ui.js'></script>");
-        out.println("</head>");
-    // Print header
-        out.println("<body>");
-        out.println("<div class='container'>"); //more bootstrap begins here
-        out.println("<div class='header'>");
-        out.println("<ul class='nav nav-pills pull-right'>");
-    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
-        out.println("<li><a href='/walter/servlet/WW_Signin'>Home</a></li>");
-    out.println("<li class='active'><a href='WW_Logout'>Logout</a></li>");
-    out.println("</ul>");
-    out.println("<h3 class='text-muted'>Walter</h3>");
-    out.println("</div>");
-    }
-    */
     
     // ========================================================================
     // HELPER METHOD: ESCAPING

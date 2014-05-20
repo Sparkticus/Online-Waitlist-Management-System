@@ -12,7 +12,7 @@ import org.apache.commons.lang.StringEscapeUtils; //for the string escaping
 
 // ==========================================================================
 // =========================== WALTER WAITLIST ==============================
-// ========================= CREATE WAITLIST PAGE============================
+// ========================= CREATE WAITLIST PAGE ===========================
 // ==========================================================================
 
 public class WW_CreateWaitlist extends HttpServlet {
@@ -24,7 +24,6 @@ public class WW_CreateWaitlist extends HttpServlet {
     
   PrintWriter out = res.getWriter();
   HttpSession session = req.getSession(true);
-  //String sessId = session.getId();
     
   printPageHeader(out,session);
   String user = (String)session.getAttribute("session_type");
@@ -32,13 +31,6 @@ public class WW_CreateWaitlist extends HttpServlet {
   if (user.equals("professor")) {
 
       String selfUrl = res.encodeURL(req.getRequestURI());
-      /**
-      Enumeration keys = session.getAttributeNames();
-      while (keys.hasMoreElements()) {
-    String key = (String)keys.nextElement();
-    out.println(key + ": " + session.getValue(key) + "<br>");
-      }
-      */
       Connection con = null;
       try {
     con = WalterDSN.connect("walter_db");
@@ -58,7 +50,7 @@ public class WW_CreateWaitlist extends HttpServlet {
     close(con);
       }
   } else {
-      out.println("You don't have permission to view this page");
+      out.println("<div class='alert alert-danger'><strong>Sorry!</strong> You don't have permission to view this page.</div>");
   }
   out.println("<div class='footer'>");
   out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
@@ -136,8 +128,7 @@ public class WW_CreateWaitlist extends HttpServlet {
     private void processForm(HttpSession session, HttpServletRequest req, PrintWriter out, Connection con)
   throws SQLException
     {
-  // Get the request data
-      
+  // Get the request data      
   String bid = (String)session.getAttribute("session_bid");
   String crn = req.getParameter("crn");
   String course_num = req.getParameter("course_num");
@@ -145,9 +136,8 @@ public class WW_CreateWaitlist extends HttpServlet {
   String department = req.getParameter("department");
   String course_limit = req.getParameter("course_limit");
   String type = req.getParameter("type");
-  //out.println("line 174 cr: "+crn);
   try {
-      if(updateDatabase(con,out,bid,crn,course_num,course_name, department, course_limit, type)) {
+      if(updateDatabase(con,out,bid,crn,course_num,course_name,department,course_limit,type)) {
     out.println("<div class='alert alert-success'><strong>Congratulations!</strong> You've successfully created a waitlist.</div>");
       } else {
     out.println("<div class='alert alert-danger'><strong>Oops!</strong> It looks like that waitlist already exists!</div>");
@@ -167,7 +157,6 @@ public class WW_CreateWaitlist extends HttpServlet {
            String department, String course_limit, String type)
   throws SQLException
     {
-  //   out.println("line 197 crn: "+crn);
   int result = insert(con, out, bid, crn, course_num, course_name, department, course_limit, type);
   if (result == 1) {
       return true;
@@ -187,7 +176,6 @@ public class WW_CreateWaitlist extends HttpServlet {
   throws SQLException
     {
   try {
-      // out.println("line 217 crn: "+crn);
       PreparedStatement query1 = con.prepareStatement
     ("INSERT INTO Course ( crn, course_num,  department, course_limit , kind, course_name  ) VALUES (?,?,?,?,?,?)");
       query1.setString(1, escape(crn)); //wrap this into a for loop later?
@@ -235,7 +223,7 @@ public class WW_CreateWaitlist extends HttpServlet {
   out.println("<option value='Lecture'>Lecture");
   out.println("<option value='Lab'>Lab");
   out.println("</select></div>");
-  out.println("<input type='submit' name='submit' value='Create Waitlist' class='btn btn-default'></form>");
+  out.println("<input type='submit' name='submit' value='Create Waitlist' class='btn btn-success'></form>");
     }
   
     // ========================================================================

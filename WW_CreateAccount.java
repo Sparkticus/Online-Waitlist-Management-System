@@ -24,8 +24,6 @@ public class WW_CreateAccount extends HttpServlet {
   PrintWriter out = res.getWriter();
   String selfUrl = res.encodeURL(req.getRequestURI());
   HttpSession session = req.getSession(true);
-  //req.getSession().invalidate();
-  //String sessId = session.getId();    
   String session_bid = (String)session.getAttribute("session_bid");
     
   printPageHeader(out,session);
@@ -46,8 +44,7 @@ public class WW_CreateAccount extends HttpServlet {
     close(con);
       }
   } else {
-      out.println("Please logout before creating a new account");
-      out.println("<form method='post' action='/walter/servlet/WW_Logout'><button  type='submit'>Log out</button></form>");
+      out.println("<div class='alert alert-danger'><strong>Sorry!</strong> You must log out before creating a new account.</div>");
   }
   out.println("<div class='footer'>");
   out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
@@ -68,7 +65,8 @@ public class WW_CreateAccount extends HttpServlet {
       }
   }
     }
-  
+
+    // Check if a user is logged in
     private int isLoggedIn(HttpSession session){
         String session_bid = (String)session.getAttribute("session_bid");
         if (session_bid!=null){
@@ -78,6 +76,7 @@ public class WW_CreateAccount extends HttpServlet {
         }
     }
 
+    // Print the page header
     private void printPageHeader(PrintWriter out,HttpSession session) {
         out.println("<html>");
         out.println("<head>");
@@ -97,22 +96,39 @@ public class WW_CreateAccount extends HttpServlet {
         out.println("<div class='container'>");
         out.println("<div class='header'>");
         out.println("<ul class='nav nav-pills pull-right'>");
-        out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
         if (isLoggedIn(session)>0){
             String type = (String)session.getAttribute("session_type");
             if (type.equals("student")){
                 out.println("<li><a href='/walter/servlet/WW_StudentHome'>Dashboard</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             } else {
                 out.println("<li><a href='/walter/servlet/WW_ProfHome'>Dashboard</a></li>");
-                out.println("<li class='active'><a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a></li>");
+                out.println("<li><a href='/walter/servlet/WW_CreateWaitlist'>Create Waitlist</a></li>");
+    out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             }
             out.println("<li><a href='/walter/servlet/WW_Logout'>Logout</a></li>");
         } else {
+      out.println("<li><a href='WW_WaitlistSearch'>Browse</a></li>");
             out.println("<li><a href='/walter/servlet/WW_Signin'>Sign in</a></li>");
         }
         out.println("</ul>");
         out.println("<h3 class='text-muted'>Walter</h3>");
         out.println("</div>");        
+    }
+
+    // Redirects the user
+    public void redirect(PrintWriter out, String url)
+  throws IOException, ServletException
+    {
+        out.println("<script type='text/javascript'>");
+        out.println("window.location.href = '"+url+"'");
+        out.println("</script>");
+        out.println("<title>Page Redirection</title>");
+        out.println("</head>");
+        out.println("<body>");
+        out.println("If you are not redirected automatically, follow the <a href='"+url+"'>link</a><br>");
+        out.println("</body>");
+        out.println("</html>");
     }
     
     // ========================================================================
@@ -146,7 +162,7 @@ public class WW_CreateAccount extends HttpServlet {
       }
       
   } else {
-      // No button was presseHttpSession session,d
+      // No button was pressed
       printCreateAccount(req, out, con, selfUrl);
   }
   
@@ -176,11 +192,9 @@ public class WW_CreateAccount extends HttpServlet {
     session.setAttribute("session_class", year);
     session.setAttribute("session_major_minor", major_minor);
     printCreateAccount(req, out, con, selfUrl);
-    //out.println("<p>Congratulations! You've successfully created an account.");
     redirect(out,"WW_StudentHome");
     
       } else {
-    //printCreateAccount(req, out, con, selfUrl);
     out.println("<div class='alert alert-danger'><b>Something went wrong!</b> It looks like you already have an account. Please sign in <a href='/walter/servlet/WW_Signin'>here</a>.</div>"); // Make sure account for duplicate accounts
       }
   } catch (Exception e) {
@@ -209,12 +223,7 @@ public class WW_CreateAccount extends HttpServlet {
     session.setAttribute("session_department", department);
     session.setAttribute("session_type", "professor");
     redirect(out,"WW_ProfHome");
-    //out.println("<p>Congratulations! You've successfully created your account.");
-    //out.println("<p><form action=/walter/servlet/WW_CreateWaitlist><button type=submit>Create a Waitlist</button></form> ");
-    //out.println("<p><form action=/walter/servlet/WW_ViewWaitlist><button type=submit  name=session_bid value="+bid+">View your Waitlist</button></form>");
       } else {
-    //printCreateAccount(req, out, con, selfUrl);
-    //out.println("<p>It looks like you already have an account!");
     out.println("<div class='alert alert-danger'><b>Something went wrong!</b> It looks like you already have an account. Please sign in <a href='/walter/servlet/WW_Signin'>here</a>.</div>");
       }
 
@@ -224,21 +233,6 @@ public class WW_CreateAccount extends HttpServlet {
   }
     }
 
-    public void redirect(PrintWriter out, String url)
-  throws IOException, ServletException
-    {
-        //out.println("<meta http-equiv='refresh' content='1;url='"+url+"'>");
-        out.println("<script type='text/javascript'>");
-        out.println("window.location.href = '"+url+"'");
-        out.println("</script>");
-        out.println("<title>Page Redirection</title>");
-        out.println("</head>");
-        out.println("<body>");
-        out.println("If you are not redirected automatically, follow the <a href='"+url+"'>link</a><br>");
-        out.println("</body>");
-        out.println("</html>");
-    }
-    
     // ========================================================================
     // HELPER METHODS: UPDATE THE DATABASES
     // ========================================================================
@@ -283,7 +277,7 @@ public class WW_CreateAccount extends HttpServlet {
   try {
       PreparedStatement query1 = con.prepareStatement
     ("INSERT INTO Person (bid, name, email, usertype, pass) VALUES (?,?,?,?,?)");
-      query1.setString(1, escape(bid)); //wrap this into a for loop later?
+      query1.setString(1, escape(bid));
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
       query1.setString(4, "s");
@@ -311,7 +305,7 @@ public class WW_CreateAccount extends HttpServlet {
   try {
       PreparedStatement query1 = con.prepareStatement
     ("INSERT INTO Person (bid, name, email, usertype, pass) VALUES (?,?,?,?,?)");
-      query1.setString(1, escape(bid)); //wrap this into a for loop later?
+      query1.setString(1, escape(bid));
       query1.setString(2, escape(name));
       query1.setString(3, escape(email));
       query1.setString(4, "p");
@@ -351,7 +345,6 @@ public class WW_CreateAccount extends HttpServlet {
     private void printStudentForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
   throws SQLException
     {
-  //out.println("<div class='jumbotron'>");
   out.println("<form role='form' method='post' action='"+selfUrl+"'>");
   out.println("<div class='form-group'><label>Banner ID</label>");
   out.println("<input required type='text' name='bid' class='form-control'></div>");
@@ -371,15 +364,13 @@ public class WW_CreateAccount extends HttpServlet {
   out.println("</select></div>");
   out.println("<div class='form-group'><label>Major/Minor</label>");
   out.println("<input required type='text' name='major_minor' class='form-control'></div>");
-  out.println("<input type='submit' name='submit' value='Add Student' class='btn btn-default'></form>");
-  //out.println("</div>");
+  out.println("<input type='submit' name='submit' value='Add Student' class='btn btn-success'></form>");
     }
 
     // Print the Professor form
     private void printProfessorForm(HttpServletRequest req, PrintWriter out, Connection con, String selfUrl)
   throws SQLException
     {
-  //out.println("<div class='jumbotron'>");
   out.println("<form role='form' method='post' action='"+selfUrl+"'>");
   out.println("<div class='form-group'><label>Banner ID</label>");
   out.println("<input required type='text' name='bid' class='form-control'></div>");
@@ -391,8 +382,7 @@ public class WW_CreateAccount extends HttpServlet {
   out.println("<input required type='password' name='pass' class='form-control'></div>");
   out.println("<div class='form-group'><label>Department</label>");
   out.println("<input required type='text' name='department' class='form-control'></div>");
-  out.println("<input type='submit' name='submit' value='Add Professor' class='btn btn-default'></form>");
-  //out.println("</div>");
+  out.println("<input type='submit' name='submit' value='Add Professor' class='btn btn-success'></form>");
     }
 
     // ========================================================================
