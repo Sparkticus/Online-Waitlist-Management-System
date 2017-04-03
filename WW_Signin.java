@@ -55,7 +55,7 @@ public class WW_Signin extends HttpServlet {
     }
     printSignup(out); //prints sign up portion
     out.println("<div class='footer'>");
-    out.println("<p>&copy; Joanna Bi and Lindsey Tang 2014</p>");
+    out.println("<p>&copy; Joanna Bi and Lindsey Tang 2017</p>");
     out.println("</div>");
     out.println("</body>");
     out.println("</html>");
